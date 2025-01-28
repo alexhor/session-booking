@@ -28,7 +28,7 @@ class Database extends Config
         'DSN'          => '',
         'hostname'     => 'gh-h-software-de_db',
         'username'     => 'php',
-        'password'     => 'yKrHaPc0lAXxMr4ufbNpIMx8UJ21Iz7gfAO2WT0pMaY3Kfc649t4dui9EfjWcYEa2wkGTLnGg7nBaZ7dZawok9nQmzkHlVoFjUUjfL408c3jEeDw2KVwIXqHZNzYFZ67aJztnq5EmhROq0lc0nyn8ORxK7LhIt0MT0uKZLXGWOCI6zTNmUOLLjdgHuq9Sn7ECFHGp7EOB3sZUiME3Q7xm02Gt6ZGKOnOVR08GwWNONnyYEb0RlDklZolmKzSHHp',
+        'password'     => 'yKrHaPc0lAXxMr4ufbNpIMx8UJ21Iz7gfAO2WT0pMaY3Kfc649t4dui9EfjWcYEa2wkGTLnGg7',
         'database'     => 'php',
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',
