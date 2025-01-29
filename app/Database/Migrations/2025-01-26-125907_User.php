@@ -11,6 +11,7 @@ class UserMigration extends Migration
         $this->forge->addField([
             'id' => [
                 'type' => 'INT',
+                'unsigned' => true,
                 'unique' => true,
             ],
             'firstname' => [
