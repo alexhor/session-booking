@@ -4,7 +4,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class User extends Migration
+class UserMigration extends Migration
 {
     public function up()
     {
@@ -27,7 +27,6 @@ class User extends Migration
                 'unique' => true,
             ],
             'created_at datetime default current_timestamp',
-            'updated_at datetime default current_timestamp on update current_timestamp',
         ]);
 
         $this->forge->addKey('id', true);
