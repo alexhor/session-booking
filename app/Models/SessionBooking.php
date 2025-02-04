@@ -13,6 +13,11 @@ class SessionBooking extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = ['user_id', 'start_time'];
+    protected array $casts = [
+        'id' => 'int',
+        'user_id' => 'int',
+        'start_time' => 'datetime',
+    ];
 
     // Dates
     protected $useTimestamps = false;

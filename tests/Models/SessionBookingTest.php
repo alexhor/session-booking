@@ -39,6 +39,37 @@ final class SessionBookingTest extends CIUnitTestCase
         $this->assertCount(2, $session_booking_model->findAll());
     }
 
+    public function testCreateInvalidSessionBookingRefused(): void
+    {
+        $session_booking_model = new SessionBooking();
+        $user_id = 946638323423;
+
+        $this->assertCount(0, $session_booking_model->findAll());
+
+        $session_booking_data = [
+            'user_id' => $user_id,
+            'start_time' => Time::now()->setMinute(0)->setSecond(0)->addHours(2),
+        ];
+        $session_bookingId = $session_booking_model->insert($session_booking_data);
+        $this->assertCount(1, $session_booking_model->findAll());
+
+        $session_booking_data = [
+            'user_id' => $user_id,
+            'start_time' => Time::now()->setMinute(0)->setSecond(0)->addHours(2)->getTimestamp(),
+        ];
+        $this->expectException(\CodeIgniter\Exceptions\InvalidArgumentException::class);
+        $session_booking_model->insert($session_booking_data);
+        $this->assertCount(1, $session_booking_model->findAll());
+
+        $session_booking_data = [
+            'user_id' => $user_id,
+            'start_time' => "test",
+        ];
+        $this->expectException(\CodeIgniter\Exceptions\InvalidArgumentException::class);
+        $session_booking_model->insert($session_booking_data);
+        $this->assertCount(1, $session_booking_model->findAll());
+    }
+
     public function testDeleteSessionBooking(): void
     {
         $session_booking_model = new SessionBooking();
