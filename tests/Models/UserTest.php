@@ -3,6 +3,7 @@
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use App\Models\User;
+use Tests\Support\Database\Seeds\UserSeeder;
 
 
 /**
@@ -179,5 +180,20 @@ final class UserTest extends CIUnitTestCase
         foreach ($user_data as $key => $_) {
             $this->assertEquals($user_data[$key], $user_model->find($user_id)[$key]);
         }
+    }
+
+    public function testGetUser(): void
+    {
+        $this->seed(UserSeeder::class);
+        $user_model = new User();
+        $user_id = 946638323423;
+        $user_data = $user_model->find($user_id);
+
+        $this->assertArrayHasKey('id', $user_data);
+        $this->assertArrayHasKey('firstname', $user_data);
+        $this->assertArrayHasKey('lastname', $user_data);
+        $this->assertArrayHasKey('email', $user_data);
+
+        $this->assertEquals(null, $user_model->find(123));
     }
 }
