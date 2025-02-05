@@ -72,9 +72,32 @@ final class UserTest extends CIUnitTestCase
             'lastname' => 'dfgdfgdfg',
             'email' => 'test.testo@example.com',
         ];
-        $this->expectException(CodeIgniter\Database\Exceptions\DatabaseException::class);
-        $user_model->insert($user_data);
+        $this->expectException(\CodeIgniter\Database\Exceptions\DatabaseException::class);
+        $this->assertEquals($user_model->insert($user_data), false);
         $this->assertCount(1, $user_model->findAll());
+    }
+
+    public function testInvalidEmail(): void
+    {
+        $user_model = new User();
+
+        $this->assertCount(0, $user_model->findAll());
+
+        $user_data = [
+            'firstname' => 'Test',
+            'lastname' => 'Testo',
+            'email' => 'test.testo',
+        ];
+        $this->assertEquals($user_model->insert($user_data), false);
+        $this->assertCount(0, $user_model->findAll());
+
+        $user_data = [
+            'firstname' => 'asdasfdas',
+            'lastname' => 'dfgdfgdfg',
+            'email' => 'test.testo@example',
+        ];
+        $this->assertEquals($user_model->insert($user_data), false);
+        $this->assertCount(0, $user_model->findAll());
     }
 
     public function testMissingValues(): void

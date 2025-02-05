@@ -22,7 +22,10 @@ class User extends Model
     protected $deletedField  = 'deleted_at';
 
     // Validation
-    protected $validationRules      = [];
+    
+    protected $validationRules = [
+        'email' => 'required|max_length[254]|valid_email',
+    ];
     protected $validationMessages   = [];
     protected $skipValidation       = false;
     protected $cleanValidationRules = true;
