@@ -48,6 +48,6 @@ class SessionBooking extends Model
     }
 
     public function get_by_range($date_from, $date_to) {
-        return $this->where("`start_time` BETWEEN '$date_from' AND '$date_to'");
+        return $this->where("`start_time` BETWEEN '$date_from' AND '$date_to'")->findAll();
     }
 }
