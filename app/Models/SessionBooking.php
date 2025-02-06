@@ -17,6 +17,7 @@ class SessionBooking extends Model
         'id' => 'int',
         'user_id' => 'int',
         'start_time' => 'datetime',
+        'created_at' => 'datetime',
     ];
 
     // Dates

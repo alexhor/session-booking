@@ -20,6 +20,9 @@ class User extends Model
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
+    protected array $casts = [
+        'created_at' => 'datetime',
+    ];
 
     // Validation
     
