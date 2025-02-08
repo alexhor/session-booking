@@ -103,6 +103,7 @@ class UserAuthenticationController extends ResourceController
      */
     public function logout_user()
     {
+        $this->session->remove('admin_logged_in_user_id');
         $this->session->remove('logged_in_user_id');
         $this->session->destroy();
         return redirect()->route('/');

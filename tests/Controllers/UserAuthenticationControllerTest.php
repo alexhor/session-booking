@@ -182,9 +182,11 @@ class UserAuthenticationControllerTest extends CIUnitTestCase
         $response->assertOk();
         $response->assertRedirectTo('/');
         $response->assertSessionMissing('logged_in_user_id');
+        $response->assertSessionMissing('admin_logged_in_user_id');
 
         $response = $this->withSession()->get('/');
         $response->assertSessionMissing('logged_in_user_id');
+        $response->assertSessionMissing('admin_logged_in_user_id');
     }
 
     public function testLogoutUserNoUserLoggedIn(): void
@@ -193,5 +195,6 @@ class UserAuthenticationControllerTest extends CIUnitTestCase
         $response->assertOk();
         $response->assertRedirectTo('/');
         $response->assertSessionMissing('logged_in_user_id');
+        $response->assertSessionMissing('admin_logged_in_user_id');
     }
 }

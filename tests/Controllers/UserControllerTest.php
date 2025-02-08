@@ -13,7 +13,10 @@ class UserControllerTest extends CIUnitTestCase
 
     public function testGetUserNotFound(): void
     {
-        $response = $this->get('users/nothing');
+        $this->expectException(\CodeIgniter\Exceptions\PageNotFoundException::class);
+        $this->get('users/nothing');
+
+        $response = $this->get('users/123');
         $response->assertNotOk();
         $response->assertStatus(404);
     }
