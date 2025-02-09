@@ -13,7 +13,9 @@ use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\Auth;
+use App\Filters\RestAuth;
 use App\Filters\Admin;
+use App\Filters\RestAdmin;
 
 class Filters extends BaseFilters
 {
@@ -37,7 +39,9 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'auth'          => Auth::class,
+        'rest_auth'          => RestAuth::class,
         'admin'          => Admin::class,
+        'rest_admin'          => RestAdmin::class,
     ];
 
     /**
