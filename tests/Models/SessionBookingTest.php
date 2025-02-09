@@ -4,6 +4,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\I18n\Time;
 use Tests\Support\Database\Seeds\UserSeeder;
+use Tests\Support\Database\Seeds\SessionBookingSeeder;
 use App\Models\SessionBooking;
 use App\Models\User;
 
@@ -164,5 +165,19 @@ final class SessionBookingTest extends CIUnitTestCase
         $this->expectException(\BadMethodCallException::class);
         $session_booking_model->update($session_booking_id, $session_booking_data);
         $this->assertCount(1, $session_booking_model->findAll());
+    }
+
+    public function testGetByRange(): void
+    {
+        Time::setTestNow(Time::now());
+        $this->regressDatabase();
+        $this->migrateDatabase();
+        $this->seed(SessionBookingSeeder::class);
+        $session_booking_model = new SessionBooking();
+
+        $range_start = Time::now()->setMinute(0)->setSecond(0)->addHours(2);
+        $range_end = Time::now()->setMinute(0)->setSecond(0)->addHours(14);
+        $session_bookings = $session_booking_model->get_by_range($range_start, $range_end);
+        $this->assertCount(3, $session_bookings);
     }
 }

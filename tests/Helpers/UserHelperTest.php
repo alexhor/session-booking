@@ -30,6 +30,10 @@ class UserHelperTest extends CIUnitTestCase
         $set_user_logged_in($user_id);
         $this->assertTrue(UserHelper::is_logged_in_user($user_id));
         $this->assertFalse(UserHelper::is_logged_in_user(123));
+
+        $user_authentication_controller->logout_user();
+        $this->assertFalse(UserHelper::is_logged_in_user($user_id));
+        $this->assertFalse(UserHelper::is_logged_in_user(123));
     }
 
     public function testIsNoLoggedInUser()
