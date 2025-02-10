@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\User;
+use App\Helpers\UserHelper;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
 
@@ -25,6 +26,7 @@ class UserController extends ResourceController
      */
     public function index()
     {
+        if (false === UserHelper::get_logged_in_admin()) return $this->failUnauthorized();
         $users = $this->user->findAll();
         return $this->respond($users);
     }
@@ -38,6 +40,10 @@ class UserController extends ResourceController
      */
     public function show($id = null)
     {
+        if (false === UserHelper::get_logged_in_admin() && !UserHelper::is_logged_in_user($id)) {
+            return $this->failUnauthorized();
+        }
+
         $user = $this->user->find($id);
         if ($user) {
             return $this->respond($user);
@@ -85,7 +91,9 @@ class UserController extends ResourceController
      */
     public function update($id = null)
     {
-        # TODO: only allow user self update
+        if (false === UserHelper::get_logged_in_admin() && !UserHelper::is_logged_in_user($id)) {
+            return $this->failUnauthorized();
+        }
 
         $user = $this->user->find($id);
         if ($user) {
@@ -135,6 +143,10 @@ class UserController extends ResourceController
      */
     public function delete($id = null)
     {
+        if (false === UserHelper::get_logged_in_admin() && !UserHelper::is_logged_in_user($id)) {
+            return $this->failUnauthorized();
+        }
+
         $user = $this->user->find($id);
         if ($user) {
             $response = $this->user->where('id', $id)->delete();
