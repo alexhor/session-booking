@@ -9,6 +9,7 @@ $routes->get('/', 'Home::index');
 $routes->get('/login', 'Home::login');
 
 
+$routes->get('users/authentication/login', 'UserAuthenticationController::get_loged_in_user');
 $routes->post('users/authentication/login', 'UserAuthenticationController::login_user');
 $routes->post('users/authentication/logout', 'UserAuthenticationController::logout_user');
 $routes->post('users/authentication', 'UserAuthenticationController::create_token');

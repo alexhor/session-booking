@@ -197,4 +197,25 @@ class UserAuthenticationControllerTest extends CIUnitTestCase
         $response->assertSessionMissing('logged_in_user_id');
         $response->assertSessionMissing('admin_logged_in_user_id');
     }
+
+    public function testGetLogedInUser(): void
+    {
+        $user_authentication_controller = new UserAuthenticationController();
+        $set_user_logged_in = $this->getPrivateMethodInvoker($user_authentication_controller, 'set_user_logged_in');
+        $user_id = 772843;
+        
+        $response = $this->get('users/authentication/login');
+        $response->assertOk();
+        $this->assertFalse(json_decode($response->getJson(), true));
+
+        $set_user_logged_in($user_id);
+        $response = $this->withSession()->get('users/authentication/login');
+        $response->assertOk();
+        $this->assertEquals($user_id, json_decode($response->getJson(), true));
+
+        $this->withSession()->post('users/authentication/logout');
+        $response = $this->withSession()->get('users/authentication/login');
+        $response->assertOk();
+        $this->assertFalse(json_decode($response->getJson(), true));
+    }
 }

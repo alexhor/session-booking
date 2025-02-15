@@ -6,6 +6,7 @@ use App\Models\UserAuthentication;
 use App\Models\User;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
+use App\Helpers\UserHelper;
 
 class UserAuthenticationController extends ResourceController
 {
@@ -107,5 +108,9 @@ class UserAuthenticationController extends ResourceController
         $this->session->remove('logged_in_user_id');
         $this->session->destroy();
         return redirect()->route('/');
+    }
+
+    public function get_loged_in_user() {
+        return $this->respond(UserHelper::get_logged_in_user(), 200);
     }
 }
