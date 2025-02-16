@@ -62,7 +62,7 @@ class SessionBookingController extends ResourceController
             }
             return $this->respond($session_booking);
         }
-        return $this->failNotFound('Sorry! no session booking found');
+        return $this->failNotFound(lang('Validation.session_booking.not_found'));
     }
 
     /**
@@ -74,8 +74,23 @@ class SessionBookingController extends ResourceController
     {
         // Validate data
         $validation = $this->validate([
-            'user_id' => 'required|integer|is_not_unique[users.id]',
-            'start_time' => 'required|integer',
+            'user_id' => [
+                'label' => 'Validation.user.id.label',
+                'rules' => 'required|integer|is_not_unique[users.id]',
+                'errors' => [
+                    'required' => 'Validation.user.id.required',
+                    'integer' => 'Validation.user.id.integer',
+                    'is_not_unique' => 'Validation.user.id.not_found',
+                ],
+            ],
+            'start_time' => [
+                'label' => 'Validation.session_booking.start_time.label',
+                'rules' => 'required|integer',
+                'errors' => [
+                    'required' => 'Validation.session_booking.start_time.required',
+                    'integer' => 'Validation.session_booking.start_time.integer',
+                ],
+            ],
         ]);
         if (!$validation) {
             return $this->failValidationErrors($this->validator->getErrors());
@@ -93,7 +108,7 @@ class SessionBookingController extends ResourceController
         // Check session isn't booked yet
         $existing_session_booking = $this->session_booking->where('start_time', $session_bookingData['start_time'])->findAll();
         if (0 != count($existing_session_booking)) {
-            return $this->failResourceExists('Session already booked');
+            return $this->failResourceExists(lang('Validation.session_booking.taken'));
         }
 
 
@@ -102,9 +117,9 @@ class SessionBookingController extends ResourceController
         if ($session_bookingId) {
             $session_booking = $this->session_booking->find($session_bookingId);
             $session_booking['start_time'] = $session_booking['start_time']->getTimestamp();
-            return $this->respondCreated($session_booking);
+            return $this->respondCreated(lang('Validation.session_booking.created'));
         }
-        return $this->fail('Sorry! no session_booking created');
+        return $this->fail(lang('Validation.session_booking.creating_failed'));
     }
 
     /**
@@ -126,10 +141,10 @@ class SessionBookingController extends ResourceController
             
             $response = $this->session_booking->where('id', $id)->delete();
             if ($response) {
-                return $this->respond($session_booking);
+                return $this->respond(lang('Validation.session_booking.deleted'));
             }
-            return $this->fail('Sorry! not deleted');
+            return $this->fail(lang('Validation.session_booking.deleting_failed'));
         }
-        return $this->failNotFound('Sorry! no session_booking found');
+        return $this->failNotFound(lang('Validation.session_booking.not_found'));
     }
 }

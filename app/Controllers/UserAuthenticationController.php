@@ -66,8 +66,24 @@ class UserAuthenticationController extends ResourceController
     public function login_user()
     {
         $validation = $this->validate([
-            'token' => 'required|alpha_numeric|exact_length[72]',
-            'email' => 'required|valid_email|is_not_unique[users.email]',
+            'token' => [
+                'label' => 'Validation.user_authentication.token.label',
+                'rules' => 'required|alpha_numeric|exact_length[72]',
+                'errors' => [
+                    'required' => 'Validation.user_authentication.token.required',
+                    'alpha_numeric' => 'Validation.user_authentication.token.alpha_numeric',
+                    'exact_length' => 'Validation.user_authentication.token.exact_length',
+                ],
+            ],
+            'email' => [
+                'label' => 'Validation.user.email.label',
+                'rules' => 'required|valid_email|is_not_unique[users.email]',
+                'errors' => [
+                    'required' => 'Validation.user.email.required',
+                    'valid_email' => 'Validation.user.email.valid',
+                    'is_not_unique' => 'Validation.user.email.not_found',
+                ],
+            ],
         ]);
         if (!$validation) {
             return $this->failValidationErrors($this->validator->getErrors());
@@ -88,7 +104,7 @@ class UserAuthenticationController extends ResourceController
             return $this->respondCreated('Login successful');
         }
         else {
-            return $this->fail('Invalid or expired token', 400);
+            return $this->fail(lang('Validation.user_authentication.token.invalid_or_expired'), 400);
         }
     }
 

@@ -48,7 +48,7 @@ class UserController extends ResourceController
         if ($user) {
             return $this->respond($user);
         }
-        return $this->failNotFound('Sorry! no user found');
+        return $this->failNotFound(lang('Validation.user.not_found'));
     }
 
     /**
@@ -59,9 +59,29 @@ class UserController extends ResourceController
     public function create()
     {
         $validation = $this->validate([
-            'firstname' => 'required',
-            'lastname' => 'required',
-            'email' => 'required|valid_email|is_unique[users.email]',
+            'firstname' => [
+                'label' => 'Validation.user.firstname.label',
+                'rules' => 'required',
+                'errors' => [
+                    'required' => 'Validation.user.firstname.required',
+                ],
+            ],
+            'lastname' => [
+                'label' => 'Validation.user.lastname.label',
+                'rules' => 'required',
+                'errors' => [
+                    'required' => 'Validation.user.lastname.required',
+                ],
+            ],
+            'email' => [
+                'label' => 'Validation.user.email.label',
+                'rules' => 'required|valid_email|is_unique[users.email]',
+                'errors' => [
+                    'required' => 'Validation.user.email.required',
+                    'valid_email' => 'Validation.user.email.valid',
+                    'is_unique' => 'Validation.user.email.taken',
+                ],
+            ],
         ]);
 
         if (!$validation) {
@@ -77,9 +97,12 @@ class UserController extends ResourceController
         $userId = $this->user->insert($userData);
         if ($userId) {
             $user = $this->user->find($userId);
-            return $this->respondCreated($user);
+            return $this->respond([
+                'data' => $user,
+                'message' => lang('Validation.user.created'),
+            ]);
         }
-        return $this->fail('Sorry! no user created');
+        return $this->fail(lang('Validation.user.creating_failed'));
     }
 
     /**
@@ -99,9 +122,28 @@ class UserController extends ResourceController
         if ($user) {
 
             $validation = $this->validate([
-                'firstname' => 'required',
-                'lastname' => 'required',
-                'email' => 'required|valid_email',
+                'firstname' => [
+                    'label' => 'Validation.user.firstname.label',
+                    'rules' => 'required',
+                    'errors' => [
+                        'required' => 'Validation.user.firstname.required',
+                    ],
+                ],
+                'lastname' => [
+                    'label' => 'Validation.user.lastname.label',
+                    'rules' => 'required',
+                    'errors' => [
+                        'required' => 'Validation.user.lastname.required',
+                    ],
+                ],
+                'email' => [
+                    'label' => 'Validation.user.email.label',
+                    'rules' => 'required|valid_email',
+                    'errors' => [
+                        'required' => 'Validation.user.email.required',
+                        'valid_email' => 'Validation.user.email.valid',
+                    ],
+                ],
             ]);
 
             if (!$validation) {
@@ -111,7 +153,13 @@ class UserController extends ResourceController
             // If email should be changed, make sure it's unique
             if ($this->request->getVar('email') != $user['email']) {
                 $email_validation = $this->validate([
-                    'email' => 'is_unique[users.email]',
+                    'email' => [
+                        'label' => 'Validation.user.email.label',
+                        'rules' => 'is_unique[users.email]',
+                        'errors' => [
+                            'is_unique' => 'Validation.user.email.taken',
+                        ],
+                    ],
                 ]);
                 if (!$email_validation) {
                     return $this->failValidationErrors($this->validator->getErrors());
@@ -127,11 +175,14 @@ class UserController extends ResourceController
 
             $response = $this->user->save($user);
             if ($response) {
-                return $this->respond($user);
+                return $this->respond([
+                    'data' => $user,
+                    'message' => lang('Validation.user.updated'),
+                ]);
             }
-            return $this->fail('Sorry! not updated');
+            return $this->fail(lang('Validation.user.updating_failed'));
         }
-        return $this->failNotFound('Sorry! no user found');
+        return $this->failNotFound(lang('Validation.user.id.not_found'));
     }
 
     /**
@@ -151,10 +202,13 @@ class UserController extends ResourceController
         if ($user) {
             $response = $this->user->where('id', $id)->delete();
             if ($response) {
-                return $this->respond($user);
+                return $this->respond([
+                    'data' => $user,
+                    'message' => lang('Validation.user.deleted'),
+                ]);
             }
-            return $this->fail('Sorry! not deleted');
+            return $this->fail(lang('Validation.user.deleting_failed'));
         }
-        return $this->failNotFound('Sorry! no user found');
+        return $this->failNotFound(lang('Validation.user.id.not_found'));
     }
 }
