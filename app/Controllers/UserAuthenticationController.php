@@ -123,7 +123,7 @@ class UserAuthenticationController extends ResourceController
         $this->session->remove('admin_logged_in_user_id');
         $this->session->remove('logged_in_user_id');
         $this->session->destroy();
-        return redirect()->route('/');
+        return $this->respond(lang('Validation.user_authentication.logout'));
     }
 
     public function get_loged_in_user() {

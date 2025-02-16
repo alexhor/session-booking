@@ -47,6 +47,7 @@ return [
         ],
     ],
     'user_authentication' => [
+        'logout' => 'Logout successful',
         'token' => [
             'label' => 'Authentication Token',
             'required' => 'No authentication token provided',

@@ -16,18 +16,18 @@ $title = 'Session Booking';
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" :href="this.baseUrl"><?php echo htmlspecialchars($title); ?></a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="<?= lang('Views.toggle_navigation'); ?>">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <span class="me-auto"></span>
                 <ul v-if="userLoggedIn" class="navbar-nav mb-2 mb-lg-0">
                     <li class="nav-item"><a class="nav-link disabled">{{ userName }}</a></li>
-                    <li class="nav-item"><a class="nav-link" @click="logout()" href="#">Logout</a></li>
+                    <li class="nav-item"><a class="nav-link" @click="logout()" href="#"><?= lang('Views.logout'); ?></a></li>
                 </ul>
                 <ul v-else class="navbar-nav mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="modal" data-bs-target="#registrationModal" href="#">Register</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="modal" data-bs-target="#loginModal" href="#">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="modal" data-bs-target="#registrationModal" href="#"><?= lang('Views.register'); ?></a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="modal" data-bs-target="#loginModal" href="#"><?= lang('Views.login'); ?></a></li>
                 </ul>
             </div>
         </div>
@@ -38,7 +38,7 @@ $title = 'Session Booking';
         <span v-for="message in messageList">
             <span class="alert d-inline-block" :class="{ 'alert-success': message.status >= 200 && message.status < 300, 'alert-danger': message.status >= 300 }" role="alert">
                 <span class="text">{{ message.text }}</span>
-                <button type="button" class="btn-close" aria-label="Close" @click="clearMessage(message.id)"></button>
+                <button type="button" class="btn-close" aria-label="<?= lang('Views.close'); ?>" @click="clearMessage(message.id)"></button>
             </span>
         </span>
     </div>
@@ -49,13 +49,13 @@ $title = 'Session Booking';
             <thead style="position: sticky; top: 0">
                 <tr style="background-color: white;">
                     <td></td>
-                    <th scope="col" :col-id="0">Monday</th>
-                    <th scope="col" :col-id="1">Tuesday</th>
-                    <th scope="col" :col-id="2">Wednesday</th>
-                    <th scope="col" :col-id="3">Thursday</th>
-                    <th scope="col" :col-id="4">Friday</th>
-                    <th scope="col" :col-id="5">Saturday</th>
-                    <th scope="col" :col-id="6">Sunday</th>
+                    <th scope="col" :col-id="0"><?= lang('Views.monday'); ?></th>
+                    <th scope="col" :col-id="1"><?= lang('Views.tuesday'); ?></th>
+                    <th scope="col" :col-id="2"><?= lang('Views.wednesday'); ?></th>
+                    <th scope="col" :col-id="3"><?= lang('Views.thursday'); ?></th>
+                    <th scope="col" :col-id="4"><?= lang('Views.friday'); ?></th>
+                    <th scope="col" :col-id="5"><?= lang('Views.saturday'); ?></th>
+                    <th scope="col" :col-id="6"><?= lang('Views.sunday'); ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -77,27 +77,27 @@ $title = 'Session Booking';
         <div class="modal-dialog">
             <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="registrationModalLabel">Register new account</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h1 class="modal-title fs-5" id="registrationModalLabel"><?= lang('Views.register_new_account'); ?></h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= lang('Views.close'); ?>"></button>
             </div>
             <div class="modal-body">
                 <form>
                     <div class="mb-3">
-                        <label for="recipient-name" class="col-form-label">Firstname:</label>
+                        <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.firstname.label'); ?>:</label>
                         <input type="text" class="form-control" v-model="registrationData.firstname">
                     </div>
                     <div class="mb-3">
-                        <label for="recipient-name" class="col-form-label">Lastname:</label>
+                        <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.lastname.label'); ?>:</label>
                         <input type="text" class="form-control" v-model="registrationData.lastname">
                     </div>
                     <div class="mb-3">
-                        <label for="recipient-name" class="col-form-label">E-Mail:</label>
+                        <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.email.label'); ?>:</label>
                         <input type="email" class="form-control" v-model="registrationData.email">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="register()">Register</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="register()"><?= lang('Validation.register'); ?></button>
             </div>
             </div>
         </div>
@@ -109,19 +109,19 @@ $title = 'Session Booking';
         <div class="modal-dialog">
             <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="loginModalLabel">Login</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h1 class="modal-title fs-5" id="loginModalLabel"><?= lang('Validation.login'); ?></h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= lang('Views.close'); ?>"></button>
             </div>
             <div class="modal-body">
                 <form>
                     <div class="mb-3">
-                        <label for="recipient-name" class="col-form-label">E-Mail:</label>
+                        <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.email.label'); ?>:</label>
                         <input type="email" class="form-control" v-model="loginEmail">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="requestLoginLink()">Request login link</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="requestLoginLink()"><?= lang('Validation.requst_login_link'); ?></button>
             </div>
             </div>
         </div>
@@ -273,7 +273,11 @@ document.app = createApp({
                 email: this.registrationData.email,
             })
             .then((response) => {
-                self.message(response.statusText, response.status);
+                if ("data" in response) {
+                    if (typeof response.data !== 'object') self.message(response.data, response.status);
+                    else if ("message" in response.data) self.message(response.data.message, response.status);
+                }
+                else self.message(response.statusText, response.status);
 
                 self.loginEmail = self.registrationData.email;
                 this.requestLoginLink();
@@ -285,7 +289,11 @@ document.app = createApp({
                 email: this.loginEmail,
             })
             .then((response) => {
-                self.message(response.statusText, response.status);
+                if ("data" in response) {
+                    if (typeof response.data !== 'object') self.message(response.data, response.status);
+                    else if ("message" in response.data) self.message(response.data.message, response.status);
+                }
+                else self.message(response.statusText, response.status);
             });
         },
         getLoggedInUser() {
@@ -317,7 +325,11 @@ document.app = createApp({
                 token: token,
             })
             .then((response) => {
-                self.message(response.statusText, response.status);
+                if ("data" in response) {
+                    if (typeof response.data !== 'object') self.message(response.data, response.status);
+                    else if ("message" in response.data) self.message(response.data.message, response.status);
+                }
+                else self.message(response.statusText, response.status);
                 
                 self.getLoggedInUser();
             });
@@ -335,7 +347,11 @@ document.app = createApp({
                 self.loginEmail = "";
                 self.bookedTimestamps = {};
 
-                self.message(response.statusText, response.status);
+                if ("data" in response) {
+                    if (typeof response.data !== 'object') self.message(response.data, response.status);
+                    else if ("message" in response.data) self.message(response.data.message, response.status);
+                }
+                else self.message(response.statusText, response.status);
 
                 self.fetchWeekBookings();
             });
@@ -348,8 +364,6 @@ document.app = createApp({
                 "start_time": timestamp,
             })
             .then((response) => {
-                self.message("Booking created",);
-
                 self.fetchWeekBookings();
             });
         },
@@ -359,8 +373,6 @@ document.app = createApp({
             const bookingId = self.bookedTimestamps[timestamp].id;
             axios.delete(this.baseUrl + "sessions/bookings/" + bookingId)
             .then((response) => {
-                self.message(response.statusText, response.status);
-
                 self.fetchWeekBookings();
             });
         },
