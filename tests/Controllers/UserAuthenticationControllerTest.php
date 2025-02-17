@@ -180,7 +180,7 @@ class UserAuthenticationControllerTest extends CIUnitTestCase
 
         $response = $this->withSession()->post('users/authentication/logout');
         $response->assertOk();
-        $response->assertRedirectTo('/');
+        $response->assertIsString(json_decode($response->getJson(), true));
         $response->assertSessionMissing('logged_in_user_id');
         $response->assertSessionMissing('admin_logged_in_user_id');
 
@@ -193,7 +193,7 @@ class UserAuthenticationControllerTest extends CIUnitTestCase
     {
         $response = $this->post('users/authentication/logout');
         $response->assertOk();
-        $response->assertRedirectTo('/');
+        $response->assertIsString(json_decode($response->getJson(), true));
         $response->assertSessionMissing('logged_in_user_id');
         $response->assertSessionMissing('admin_logged_in_user_id');
     }

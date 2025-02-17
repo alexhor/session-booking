@@ -117,7 +117,10 @@ class SessionBookingController extends ResourceController
         if ($session_bookingId) {
             $session_booking = $this->session_booking->find($session_bookingId);
             $session_booking['start_time'] = $session_booking['start_time']->getTimestamp();
-            return $this->respondCreated(lang('Validation.session_booking.created'));
+            return $this->respondCreated([
+                'message' => lang('Validation.session_booking.created'),
+                'data' => $session_booking
+            ]);
         }
         return $this->fail(lang('Validation.session_booking.creating_failed'));
     }

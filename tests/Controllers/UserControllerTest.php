@@ -72,6 +72,12 @@ class UserControllerTest extends CIUnitTestCase
         $response = $this->withBodyFormat('json')->post('users', $user_data);
         $response->assertOk();
         $response_data = json_decode($response->getJson(), true);
+        $this->assertArrayHasKey('message', $response_data);
+        $this->assertIsString($response_data['message']);
+        $this->assertArrayHasKey('data', $response_data);
+        $this->assertIsArray($response_data['data']);
+        $response_data = $response_data['data'];
+
         $this->assertArrayHasKey('id', $response_data);
         $this->assertArrayHasKey('firstname', $response_data);
         $this->assertArrayHasKey('lastname', $response_data);
@@ -147,6 +153,12 @@ class UserControllerTest extends CIUnitTestCase
             'email' => 'test.testo@example.com',
         ];
         $response_data = json_decode($this->withBodyFormat('json')->post('users', $user_data)->getJson(), true);
+        $this->assertArrayHasKey('message', $response_data);
+        $this->assertIsString($response_data['message']);
+        $this->assertArrayHasKey('data', $response_data);
+        $this->assertIsArray($response_data['data']);
+        $response_data = $response_data['data'];
+
         $this->assertCount(1, $user_model->findAll());
         $this->assertArrayHasKey('id', $response_data);
         $this->assertArrayHasKey('firstname', $response_data);
@@ -177,6 +189,11 @@ class UserControllerTest extends CIUnitTestCase
         $this->withSession([])->get('/');
 
         $response_data = json_decode($this->withSession([])->withBodyFormat('json')->post('users', $user_data)->getJson(), true);
+        $this->assertArrayHasKey('message', $response_data);
+        $this->assertIsString($response_data['message']);
+        $this->assertArrayHasKey('data', $response_data);
+        $this->assertIsArray($response_data['data']);
+        $response_data = $response_data['data'];
         $this->assertCount(1, $user_model->findAll());
         // User logged in
         $set_user_logged_in($response_data['id']);
@@ -286,6 +303,11 @@ class UserControllerTest extends CIUnitTestCase
             'email' => 'test.testo@example.com',
         ];
         $response_data = json_decode($this->withBodyFormat('json')->post('users', $user_data)->getJson(), true);
+        $this->assertArrayHasKey('message', $response_data);
+        $this->assertIsString($response_data['message']);
+        $this->assertArrayHasKey('data', $response_data);
+        $this->assertIsArray($response_data['data']);
+        $response_data = $response_data['data'];
         $this->assertCount(1, $user_model->findAll());
 
         // No user logged in, only change some values
@@ -321,6 +343,12 @@ class UserControllerTest extends CIUnitTestCase
         $response = $this->withSession()->withBodyFormat('json')->put('users/' . $response_data['id'], $user_data);
         $response->assertOk();
         $response_data = json_decode($response->getJson(), true);
+        $this->assertArrayHasKey('message', $response_data);
+        $this->assertIsString($response_data['message']);
+        $this->assertArrayHasKey('data', $response_data);
+        $this->assertIsArray($response_data['data']);
+        $response_data = $response_data['data'];
+
         $this->assertCount(1, $user_model->findAll());
         foreach ($user_data as $key => $_) {
             $this->assertEquals($user_data[$key], $response_data[$key]);
@@ -335,6 +363,12 @@ class UserControllerTest extends CIUnitTestCase
         $response = $this->withSession()->withBodyFormat('json')->put('users/' . $response_data['id'], $user_data);
         $response->assertOk();
         $response_data = json_decode($response->getJson(), true);
+        $this->assertArrayHasKey('message', $response_data);
+        $this->assertIsString($response_data['message']);
+        $this->assertArrayHasKey('data', $response_data);
+        $this->assertIsArray($response_data['data']);
+        $response_data = $response_data['data'];
+
         $this->assertCount(1, $user_model->findAll());
         foreach ($user_data as $key => $_) {
             $this->assertEquals($user_data[$key], $response_data[$key]);
@@ -361,6 +395,12 @@ class UserControllerTest extends CIUnitTestCase
         $response = $this->withSession()->withBodyFormat('json')->put('users/' . $response_data['id'], $user_data);
         $response->assertOk();
         $response_data = json_decode($response->getJson(), true);
+        $this->assertArrayHasKey('message', $response_data);
+        $this->assertIsString($response_data['message']);
+        $this->assertArrayHasKey('data', $response_data);
+        $this->assertIsArray($response_data['data']);
+        $response_data = $response_data['data'];
+
         $this->assertCount(1, $user_model->findAll());
         foreach ($user_data as $key => $_) {
             $this->assertEquals($user_data[$key], $response_data[$key]);
@@ -375,6 +415,12 @@ class UserControllerTest extends CIUnitTestCase
         $response = $this->withSession()->withBodyFormat('json')->put('users/' . $response_data['id'], $user_data);
         $response->assertOk();
         $response_data = json_decode($response->getJson(), true);
+        $this->assertArrayHasKey('message', $response_data);
+        $this->assertIsString($response_data['message']);
+        $this->assertArrayHasKey('data', $response_data);
+        $this->assertIsArray($response_data['data']);
+        $response_data = $response_data['data'];
+
         $this->assertCount(1, $user_model->findAll());
         foreach ($user_data as $key => $_) {
             $this->assertEquals($user_data[$key], $response_data[$key]);

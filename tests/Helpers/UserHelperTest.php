@@ -31,7 +31,7 @@ class UserHelperTest extends CIUnitTestCase
         $this->assertTrue(UserHelper::is_logged_in_user($user_id));
         $this->assertFalse(UserHelper::is_logged_in_user(123));
 
-        $user_authentication_controller->logout_user();
+        $_SESSION = [];
         $this->assertFalse(UserHelper::is_logged_in_user($user_id));
         $this->assertFalse(UserHelper::is_logged_in_user(123));
     }

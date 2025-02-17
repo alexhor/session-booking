@@ -47,6 +47,12 @@ class SessionBookingContollerTest extends CIUnitTestCase
         $response = $this->withSession()->withBodyFormat('json')->post('sessions/bookings', $session_booking_data);
         $response->assertOk();
         $response_data = json_decode($response->getJson(), true);
+        $this->assertArrayHasKey('message', $response_data);
+        $this->assertIsString($response_data['message']);
+        $this->assertArrayHasKey('data', $response_data);
+        $this->assertIsArray($response_data['data']);
+        $response_data = $response_data['data'];
+
         $this->assertArrayHasKey('id', $response_data);
         $this->assertIsInt($response_data['id']);
         $session_booking_data['id'] = $response_data['id'];
@@ -64,6 +70,12 @@ class SessionBookingContollerTest extends CIUnitTestCase
         $response = $this->withSession()->withBodyFormat('json')->post('sessions/bookings', $session_booking_data);
         $response->assertOk();
         $response_data = json_decode($response->getJson(), true);
+        $this->assertArrayHasKey('message', $response_data);
+        $this->assertIsString($response_data['message']);
+        $this->assertArrayHasKey('data', $response_data);
+        $this->assertIsArray($response_data['data']);
+        $response_data = $response_data['data'];
+        
         $this->assertArrayHasKey('id', $response_data);
         $this->assertIsInt($response_data['id']);
         $session_booking_data['id'] = $response_data['id'];
@@ -91,6 +103,12 @@ class SessionBookingContollerTest extends CIUnitTestCase
         $response = $this->withSession()->withBodyFormat('json')->post('sessions/bookings', $session_booking_data);
         $response->assertOk();
         $response_data = json_decode($response->getJson(), true);
+        $this->assertArrayHasKey('message', $response_data);
+        $this->assertIsString($response_data['message']);
+        $this->assertArrayHasKey('data', $response_data);
+        $this->assertIsArray($response_data['data']);
+        $response_data = $response_data['data'];
+        
         $this->assertArrayHasKey('id', $response_data);
         $this->assertIsInt($response_data['id']);
         $session_booking_data['id'] = $response_data['id'];
