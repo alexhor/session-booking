@@ -1,0 +1,58 @@
+<?php
+
+return [
+    'session_booking' => [
+        'not_found' => 'Es wurde keine Session Buchung gefunden',
+        'deleting_failed' => 'Löschen der Session Buchung ist fehlgeschlagen',
+        'taken' => 'Session ist bereits von einer anderen Person belegt',
+        'created' => 'Session gebucht',
+        'creating_failed' => "Session konnte nicht gebucht werden",
+        'deleted' => 'Session Buchung wurde gelöscht',
+
+        'start_time' => [
+            'label' => 'Startzeit',
+            'required' => 'Uhrzeit der Session Buchung fehlt',
+            'integer' => 'Uhrzeit Session Buchung time ist ungültig',
+        ]
+    ],
+    'user' => [
+        'not_found' => 'Es wurde kein Benutzer gefunden',
+        'created' => 'Benutzer erstellt',
+        'creating_failed' => 'Erstellen des Benutzers ist fehlgeschlagen',
+        'updated' => 'Benutzerdaten wurden aktualisiert',
+        'updating_failed' => 'Aktualisierung der Benutzerdaten ist fehlgeschlagen',
+        'deleted' => 'Benutzer wurde gelöscht',
+        'deleting_failed' => 'Löschen des Benutzers ist fehlgeschlagen',
+        'id' => [
+            'label' => 'Benutzer ID',
+            'required' => 'ID des Benutzers fehlt',
+            'integer' => 'ID des Benutzers ist ungültig',
+            'not_found' => 'Es wurde kein Benutzer gefundend',
+        ],
+        'email' => [
+            'label' => 'E-Mail',
+            'required' => 'E-Mail Adresse fehlt',
+            'valid' => 'E-Mail Adresse ist ungültig',
+            'not_found' => 'Es konnte kein Benutzer mit dieser E-Mail Adresse gefunden werden',
+            'taken' => 'Diese E-Mail Adresse wird bereits von einem anderen Account benutzt',
+        ],
+        'firstname' => [
+            'label' => 'Vorname',
+            'required' => 'Vorname fehlt',
+        ],
+        'lastname' => [
+            'label' => 'Nachname',
+            'required' => 'Nachname fehlt',
+        ],
+    ],
+    'user_authentication' => [
+        'logout' => 'Logout erfolgreich',
+        'token' => [
+            'label' => 'Authentifizierungs Token',
+            'required' => 'Authentifizierungs Token fehlt',
+            'alpha_numeric' => 'Format des Authentifizierungs Tokens ist ungültig',
+            'exact_length' => 'Länge des Authentifizierungs Tokens ist ungültig',
+            'invalid_or_expired' => 'Ungültiger oder abgelaufener Authentifizierungs Token',
+        ],
+    ],
+];
