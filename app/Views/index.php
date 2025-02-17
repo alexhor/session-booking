@@ -400,6 +400,10 @@ document.app = createApp({
 </script>
 
 <style>
+    /** General **/
+    .container {
+        overflow-x: auto;
+    }
     /** Notifications **/
     .notification-wrapper {
         padding: 10px 20px;
@@ -450,6 +454,10 @@ document.app = createApp({
 
     .session-overview th {
         background-color: transparent;
+    }
+
+    .session-overview thead th {
+        width: 150px;
     }
 
     .session-overview button, .session-overview span {
