@@ -131,7 +131,6 @@ $title = 'Session Booking';
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
 <script type="module">
 
 
@@ -195,16 +194,22 @@ document.app = createApp({
     },
     methods: {
         __startTableHighlighting() {
-            $('.session-overview > tbody > tr > td').hover(
-                (e) => {
-                    const colId = $(e.currentTarget).attr('col-id');
-                    const header = $($('.session-overview > thead > tr > th[col-id="' + colId + '"]')[0]);
-                    header.addClass('highlight');
-                },
-                (e) => {
-                    $('.session-overview > thead > tr > th').removeClass('highlight');
-                }
-            );
+            document.querySelectorAll('.session-overview').forEach((table) => {
+                table.querySelectorAll('tbody > tr > td').forEach((td) => {
+                    td.addEventListener('mouseover', (e) => {
+                        const colId = e.currentTarget.getAttribute('col-id');
+                        const header = table.querySelector('thead > tr > th[col-id="' + colId + '"]');
+                        header.classList.add('highlight');
+                    });
+                    td.addEventListener('mouseout', (e) => {
+                        table.querySelectorAll('thead > tr > th').forEach(th => {
+                            th.classList.remove('highlight');
+                        });
+                    });
+                });
+            });
+
+
         },
         message(text, status=200, secondsToLive=10) {
             const id = this.__nextMessageId;
