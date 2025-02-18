@@ -47,6 +47,7 @@ return [
         ],
     ],
     'user_authentication' => [
+        'login' => 'Login successful',
         'logout' => 'Logout successful',
         'token' => [
             'label' => 'Authentication Token',
@@ -54,6 +55,7 @@ return [
             'alpha_numeric' => 'Invalid token format',
             'exact_length' => 'Invalid token length',
             'invalid_or_expired' => 'Invalid or expired token',
+            'send_by_email' => 'E-Mail with token was send',
         ],
     ],
 ];

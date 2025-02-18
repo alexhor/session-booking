@@ -46,6 +46,7 @@ return [
         ],
     ],
     'user_authentication' => [
+        'login' => 'Login erfolgreich',
         'logout' => 'Logout erfolgreich',
         'token' => [
             'label' => 'Authentifizierungs Token',
@@ -53,6 +54,7 @@ return [
             'alpha_numeric' => 'Format des Authentifizierungs Tokens ist ungültig',
             'exact_length' => 'Länge des Authentifizierungs Tokens ist ungültig',
             'invalid_or_expired' => 'Ungültiger oder abgelaufener Authentifizierungs Token',
+            'send_by_email' => 'E-Mail mit Token wurde versendet',
         ],
     ],
 ];

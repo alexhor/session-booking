@@ -30,7 +30,15 @@ class UserAuthenticationController extends ResourceController
     public function create_token()
     {
         $validation = $this->validate([
-            'email' => 'required|valid_email|is_not_unique[users.email]',
+            'email' => [
+                'label' => 'Validation.user.email.label',
+                'rules' => 'required|valid_email|is_not_unique[users.email]',
+                'errors' => [
+                    'required' => 'Validation.user.email.required',
+                    'valid_email' => 'Validation.user.email.valid',
+                    'is_not_unique' => 'Validation.user.not_found',
+                ],
+            ],
         ]);
 
         if (!$validation) {
@@ -40,7 +48,7 @@ class UserAuthenticationController extends ResourceController
         // Get user data from email
         $email = $this->request->getVar('email');
         $user_data = $this->user->where('email', $email)->findAll();
-        if (1 != count($user_data)) return $this->fail('Sorry! no user found');
+        if (1 != count($user_data)) return $this->fail(lang('Validation.user.not_found'));
         $user_data = $user_data[0];
 
         // Generate token
@@ -55,7 +63,7 @@ class UserAuthenticationController extends ResourceController
         $email->send();
         //TODO: limit token sending to one email every X minutes
         
-        return $this->respond('E-Mail with token was send', 200);
+        return $this->respond(lang('Validation.user_authentication.token.send_by_email'));
     }
 
     /**
@@ -94,17 +102,17 @@ class UserAuthenticationController extends ResourceController
         $email = $this->request->getVar('email');
         $user_data = $this->user->where('email', $email)->findAll();
         if (1 != count($user_data)) {
-            return $this->fail('User not found', 400);
+            return $this->fail(lang('Validation.user.not_found'));
         }
         $user_data = $user_data[0];
 
         // Check token validity
         if ($this->user_authentication->token_valid($user_data['id'], $token)) {
             $this->set_user_logged_in($user_data['id']);
-            return $this->respondCreated('Login successful');
+            return $this->respondCreated(lang('Validation.user_authentication.login'));
         }
         else {
-            return $this->fail(lang('Validation.user_authentication.token.invalid_or_expired'), 400);
+            return $this->fail(lang('Validation.user_authentication.token.invalid_or_expired'));
         }
     }
 
@@ -127,6 +135,6 @@ class UserAuthenticationController extends ResourceController
     }
 
     public function get_loged_in_user() {
-        return $this->respond(UserHelper::get_logged_in_user(), 200);
+        return $this->respond(UserHelper::get_logged_in_user());
     }
 }
