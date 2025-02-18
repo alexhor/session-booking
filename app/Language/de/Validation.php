@@ -55,6 +55,7 @@ return [
             'exact_length' => 'Länge des Authentifizierungs Tokens ist ungültig',
             'invalid_or_expired' => 'Ungültiger oder abgelaufener Authentifizierungs Token',
             'send_by_email' => 'E-Mail mit Token wurde versendet',
+            'too_may_requests' => 'Token wurden zu oft angefragt. Bitte in einer Minute erneut versuchen',
         ],
     ],
 ];

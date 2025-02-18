@@ -8,6 +8,7 @@ use CodeIgniter\Test\FeatureTestTrait;
 use Tests\Support\Database\Seeds\UserSeeder;
 use App\Models\UserAuthentication;
 use CodeIgniter\Events\Events;
+use CodeIgniter\I18n\Time;
 
 class UserAuthenticationControllerTest extends CIUnitTestCase
 {
@@ -18,6 +19,7 @@ class UserAuthenticationControllerTest extends CIUnitTestCase
 
     public function testCreateToken(): void
     {
+        Time::setTestNow(Time::now());
         $user_data = [
             'email' => 'test.testo@example.com',
         ];
@@ -32,6 +34,7 @@ class UserAuthenticationControllerTest extends CIUnitTestCase
         });
 
         for ($i=0; $i<5; $i++) {
+            Time::setTestNow(Time::now()->addMinutes(1));
             $response = $this->withBodyFormat('json')->post('users/authentication', $user_data);
             $response->assertOk();
             $this->assertIsString(json_decode($response->getJson(), true));
@@ -124,6 +127,7 @@ class UserAuthenticationControllerTest extends CIUnitTestCase
 
     public function testLoginUserInvalidToken(): void
     {
+        Time::setTestNow(Time::now()->addMinutes(1));
         $user_id = 772843;
         $user_data = [
             'email' => 'test.testo@example.com',

@@ -56,6 +56,7 @@ return [
             'exact_length' => 'Invalid token length',
             'invalid_or_expired' => 'Invalid or expired token',
             'send_by_email' => 'E-Mail with token was send',
+            'too_may_requests' => 'Token was requested too often. Please try again in one minute',
         ],
     ],
 ];

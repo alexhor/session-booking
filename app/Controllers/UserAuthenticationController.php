@@ -54,6 +54,12 @@ class UserAuthenticationController extends ResourceController
         // Generate token
         $token = $this->user_authentication->insert(['user_id' => $user_data['id']]);
         $link = url_to('Home::login') . '?email=' . urlencode($email) . '&token=' . urlencode($token);
+
+        // Limit token sending to two emails every minute
+        $throttler = service('throttler');
+        if (false === $throttler->check(md5($this->request->getIPAddress()), 2, MINUTE)) {
+            return $this->fail(lang('Validation.user_authentication.token.too_may_requests'), 429);
+        }
         
         // Send token email
         $email = service('email');
@@ -61,7 +67,6 @@ class UserAuthenticationController extends ResourceController
         $email->setSubject(lang('Emails.login_link.subject'));
         $email->setMessage(lang('Emails.login_link.message', ['link' => $link]));
         $email->send();
-        //TODO: limit token sending to one email every X minutes
         
         return $this->respond(lang('Validation.user_authentication.token.send_by_email'));
     }
