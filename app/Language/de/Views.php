@@ -14,5 +14,5 @@ return [
     'register_new_account' => 'Neuen Account registrieren',
     'close' => 'Schließen',
     'toggle_navigation' => 'Navigation umschalten',
-    'requst_login_link' => 'Login Link anfordern',
+    'request_login_link' => 'Login Link anfordern',
 ];

@@ -14,5 +14,5 @@ return [
     'register_new_account' => 'Register new account',
     'close' => 'Close',
     'toggle_navigation' => 'Toggle navigation',
-    'requst_login_link' => 'Request login link',
+    'request_login_link' => 'Request login link',
 ];

@@ -97,7 +97,7 @@ $title = 'Session Booking';
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="register()"><?= lang('Validation.register'); ?></button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="register()"><?= lang('Views.register'); ?></button>
             </div>
             </div>
         </div>
@@ -109,7 +109,7 @@ $title = 'Session Booking';
         <div class="modal-dialog">
             <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="loginModalLabel"><?= lang('Validation.login'); ?></h1>
+                <h1 class="modal-title fs-5" id="loginModalLabel"><?= lang('Views.login'); ?></h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= lang('Views.close'); ?>"></button>
             </div>
             <div class="modal-body">
@@ -121,7 +121,7 @@ $title = 'Session Booking';
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="requestLoginLink()"><?= lang('Validation.requst_login_link'); ?></button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="requestLoginLink()"><?= lang('Views.request_login_link'); ?></button>
             </div>
             </div>
         </div>
