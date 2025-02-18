@@ -50,8 +50,8 @@ class UserAuthenticationController extends ResourceController
         // Send token email
         $email = service('email');
         $email->setTo($user_data['email'], $user_data['firstname'] . ' ' . $user_data['lastname']);
-        $email->setSubject('Login link');
-        $email->setMessage("Click the following link to login:\n$link");
+        $email->setSubject(lang('Emails.login_link.subject'));
+        $email->setMessage(lang('Emails.login_link.message', ['link' => $link]));
         $email->send();
         //TODO: limit token sending to one email every X minutes
         
