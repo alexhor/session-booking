@@ -153,8 +153,13 @@ document.app = createApp({
         axios.interceptors.response.use(function (response) {
             return response;
         }, function (e) {
-            console.log(e);
-            self.message(Object.values(e.response.data.messages).join("\n"), e.response.data.status);
+            if (401 == e.status) {
+                self.__cleanupUserSession();
+            }
+            else {
+                self.message(Object.values(e.response.data.messages).join("\n"), e.response.data.status);
+            }
+            
             return Promise.reject(e);
         });
 
@@ -307,8 +312,7 @@ document.app = createApp({
             .then((response) => {
                 var user_id = response.data;
                 if (!user_id) {
-                    self.userId  = false;
-                    self.fetchWeekBookings();
+                    self.__cleanupUserSession();
                 }
                 else {
                     self.userId = parseInt(user_id, 10);
@@ -339,26 +343,29 @@ document.app = createApp({
                 self.getLoggedInUser();
             });
         },
+        __cleanupUserSession() {
+            this.userLoggedIn = false;
+            this.userId = false;
+            this.userName = "";
+            this.registrationData.firstname = "";
+            this.registrationData.lastname = "";
+            this.registrationData.email = "";
+            this.loginEmail = "";
+            this.bookedTimestamps = {};
+
+            this.fetchWeekBookings();
+        },
         logout() {
             var self = this;
             axios.post(this.baseUrl + "users/authentication/logout", {})
             .then((response) => {
-                self.userLoggedIn = false;
-                self.userId = false;
-                self.userName = "";
-                self.registrationData.firstname = "";
-                self.registrationData.lastname = "";
-                self.registrationData.email = "";
-                self.loginEmail = "";
-                self.bookedTimestamps = {};
+                self.__cleanupUserSession();
 
                 if ("data" in response) {
                     if (typeof response.data !== 'object') self.message(response.data, response.status);
                     else if ("message" in response.data) self.message(response.data.message, response.status);
                 }
                 else self.message(response.statusText, response.status);
-
-                self.fetchWeekBookings();
             });
         },
         bookSession(timestamp) {
