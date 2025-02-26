@@ -45,17 +45,80 @@ $title = 'Session Booking';
     
     <!-- main content -->
     <div class="container">
+        <!-- week navigation -->
+        <nav aria-label="Week navigation" class="calendar-wrapper">
+            <ul class="pagination pagination-lg justify-content-center">
+                <li class="page-item">
+                    <a class="page-link" @click="selectPreviousWeek()" aria-label="Previous">
+                        <span>&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item"><a class="page-link" @click="calendar.show = !calendar.show">{{ weekRange() }}</a></li>
+                <li class="page-item">
+                    <a class="page-link" @click="selectNextWeek()" aria-label="Next">
+                        <span>&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+
+
+            <div v-if="calendar.show" class="calendar">
+                <nav class="calendar-navigation">
+                    <button class="page-link" @click="calendar.shownYear--">&laquo;</button>
+                    <button class="page-link" @click="calendarSetPreviousMonth()">&lt;</button>
+                    <button class="page-link today" @click="calendarSetToday()">
+                        <svg viewBox="0 0 16 16" width="20px" class="hover-hide"><circle fill="#9d9d9d" cx="8" cy="8" r="8" /></svg>
+                        <svg viewBox="0 0 16 16" width="20px" class="hover-show"><circle fill="white" cx="8" cy="8" r="8" /></svg>
+                    </button>
+                    <button class="page-link" @click="calendarSetNextMonth()">&gt;</button>
+                    <button class="page-link" @click="calendar.shownYear++">&raquo;</button>
+                </nav>
+                <div class="calendar-body">
+                    <div class="month-header">{{ calendar.monthNames[calendar.shownMonth] }} {{ calendar.shownYear }}</div>
+                    <div class="month-body">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th><?= lang('Views.weekdays.short.mon'); ?></th>
+                                    <th><?= lang('Views.weekdays.short.tue'); ?></th>
+                                    <th><?= lang('Views.weekdays.short.wed'); ?></th>
+                                    <th><?= lang('Views.weekdays.short.thu'); ?></th>
+                                    <th><?= lang('Views.weekdays.short.fri'); ?></th>
+                                    <th><?= lang('Views.weekdays.short.sat'); ?></th>
+                                    <th><?= lang('Views.weekdays.short.sun'); ?></th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr v-for="row in 6"
+                                    :class="{ selected: isRowSelected(calendarDayMatrix[row], row) }">
+                                    <td v-for="col in 7">
+                                        <span class="day"
+                                            :class="{ 'previous-month': isDayOfPreviousMonth(calendarDayMatrix[row][col], row), 'next-month': isDayOfNextMonth(calendarDayMatrix[row][col], row) }"
+                                            @click="selectWeek(calendarDayMatrix[row][col], row)">
+                                            {{ calendarDayMatrix[row][col] }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- session table -->
         <table class="table table-hover session-overview" cellspacing="0">
             <thead style="position: sticky; top: 0">
                 <tr style="background-color: white;">
                     <td></td>
-                    <th scope="col" :col-id="0"><?= lang('Views.monday'); ?></th>
-                    <th scope="col" :col-id="1"><?= lang('Views.tuesday'); ?></th>
-                    <th scope="col" :col-id="2"><?= lang('Views.wednesday'); ?></th>
-                    <th scope="col" :col-id="3"><?= lang('Views.thursday'); ?></th>
-                    <th scope="col" :col-id="4"><?= lang('Views.friday'); ?></th>
-                    <th scope="col" :col-id="5"><?= lang('Views.saturday'); ?></th>
-                    <th scope="col" :col-id="6"><?= lang('Views.sunday'); ?></th>
+                    <th scope="col" :col-id="0"><?= lang('Views.weekdays.long.monday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp) }}</th>
+                    <th scope="col" :col-id="1"><?= lang('Views.weekdays.long.tuesday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24) }}</th>
+                    <th scope="col" :col-id="2"><?= lang('Views.weekdays.long.wednesday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*2) }}</th>
+                    <th scope="col" :col-id="3"><?= lang('Views.weekdays.long.thursday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*3) }}</th>
+                    <th scope="col" :col-id="4"><?= lang('Views.weekdays.long.friday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*4) }}</th>
+                    <th scope="col" :col-id="5"><?= lang('Views.weekdays.long.saturday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*5) }}</th>
+                    <th scope="col" :col-id="6"><?= lang('Views.weekdays.long.sunday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*6) }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -184,7 +247,29 @@ document.app = createApp({
             },
             weekStartTimestamp: self.getWeekStartTimestamp(),
             weekEndTimestamp: self.getWeekEndTimestamp(),
-            bookedTimestamps: {}
+            bookedTimestamps: {},
+            calendar: {
+                show: false,
+                shownMonth: (new Date()).getMonth(),
+                shownYear: (new Date()).getFullYear(),
+                selectedWeek: self.selectedWeekFromDate((new Date()).getDate()),
+                selectedMonth: (new Date()).getMonth(),
+                selectedYear: (new Date()).getFullYear(),
+                monthNames: [
+                    '<?= lang('Views.months.january'); ?>',
+                    '<?= lang('Views.months.february'); ?>',
+                    '<?= lang('Views.months.march'); ?>',
+                    '<?= lang('Views.months.april'); ?>',
+                    '<?= lang('Views.months.may'); ?>',
+                    '<?= lang('Views.months.june'); ?>',
+                    '<?= lang('Views.months.july'); ?>',
+                    '<?= lang('Views.months.august'); ?>',
+                    '<?= lang('Views.months.september'); ?>',
+                    '<?= lang('Views.months.october'); ?>',
+                    '<?= lang('Views.months.november'); ?>',
+                    '<?= lang('Views.months.december'); ?>'
+                ]
+            }
         }
     },
     computed: {
@@ -195,6 +280,9 @@ document.app = createApp({
             }
 
             return response;
+        },
+        calendarDayMatrix() {
+            return this.generateCalendarDayMatrix(this.calendar.shownYear, this.calendar.shownMonth);
         },
     },
     methods: {
@@ -215,6 +303,157 @@ document.app = createApp({
             });
 
 
+        },
+        selectPreviousWeek() {
+            this.weekStartTimestamp -= 60*60*24*7;
+            this.weekEndTimestamp -= 60*60*24*7;
+
+            const date = new Date(this.weekStartTimestamp * 1000);
+            this.calendar.shownYear = this.calendar.selectedYear = date.getFullYear();
+            this.calendar.shownMonth = this.calendar.selectedMonth = date.getMonth();
+            this.calendar.selectedWeek = this.getDayRow(date.getDate(), this.calendar.shownMonth, this.calendar.shownYear);
+
+            this.fetchWeekBookings();
+        },
+        selectNextWeek() {
+            this.weekStartTimestamp += 60*60*24*7;
+            this.weekEndTimestamp += 60*60*24*7;
+
+            const date = new Date(this.weekStartTimestamp * 1000);
+            this.calendar.shownYear = this.calendar.selectedYear = date.getFullYear();
+            this.calendar.shownMonth = this.calendar.selectedMonth = date.getMonth();
+            this.calendar.selectedWeek = this.getDayRow(date.getDate(), this.calendar.shownMonth, this.calendar.shownYear);
+
+            this.fetchWeekBookings();
+        },
+        generateCalendarDayMatrix(shownYear, shownMonth, showNonMonthDays=true) {
+            const date = new Date(shownYear, shownMonth);
+            const firstWeekday = date.getDay() == 0 ? 7 : date.getDay();
+            const daysOfPreviousMonth = (new Date(shownYear, shownMonth, 0)).getDate();
+            const daysOfTheMonth = (new Date(shownYear, shownMonth + 1, 0)).getDate();
+
+            const matrix = [];
+
+            var currentDay = -1 * firstWeekday + 1;
+            // rows
+            for (let i=1; i<=6; i++) {
+                const row = [];
+                // cols
+                for (let j=1; j<=7; j++) {
+                    currentDay++;
+                    if (currentDay < 1) { if(showNonMonthDays) { row[j] = daysOfPreviousMonth + currentDay; } }
+                    else if (currentDay > daysOfTheMonth) { if(showNonMonthDays) { row[j] = currentDay - daysOfTheMonth; } }
+                    else row[j] = currentDay;
+                }
+
+                matrix[i] = row;
+            }
+
+            return matrix;
+        },
+        getDayRow(day, month, year) {
+            const monthMatrix = this.generateCalendarDayMatrix(year, month, false);
+            var foundIndex = false;
+            monthMatrix.forEach((row, index) => {
+                if (row.includes(day)) {
+                    foundIndex = index;
+                    return false;
+                }
+            });
+            return foundIndex;
+        },
+        selectWeek(day, row) {
+            if (this.isDayOfPreviousMonth(day, row)) {
+                this.calendarSetPreviousMonth();
+            }
+            else if (this.isDayOfNextMonth(day, row)) {
+                this.calendarSetNextMonth();
+            }
+            this.calendar.selectedWeek = this.getDayRow(day, this.calendar.shownMonth, this.calendar.shownYear);
+            this.calendar.selectedMonth = this.calendar.shownMonth;
+            this.calendar.selectedYear = this.calendar.shownYear;
+
+            // Set week timestamps
+            const dayOfTheWeek = new Date(this.calendar.selectedYear, this.calendar.selectedMonth, day)
+            this.weekStartTimestamp = this.getWeekStartTimestamp(dayOfTheWeek);
+            this.weekEndTimestamp = this.getWeekEndTimestamp(dayOfTheWeek);
+
+            this.fetchWeekBookings();
+        },
+        selectedWeekFromDate(day) {
+            const firstWeekday = (new Date()).getDay();
+            for (let i=0; i<6; i++) {
+                if (day <= 7-firstWeekday + i*7) return i+1;
+            }
+        },
+        calendarSetToday() {
+            const today = new Date();
+            this.calendar.selectedMonth = this.calendar.shownMonth = today.getMonth();
+            this.calendar.selectedYear = this.calendar.shownYear = today.getFullYear();
+            this.calendar.selectedWeek = this.getDayRow(today.getDate(), this.calendar.shownMonth, this.calendar.shownYear);
+
+            // Set week timestamps
+            this.weekStartTimestamp = this.getWeekStartTimestamp(today);
+            this.weekEndTimestamp = this.getWeekEndTimestamp(today);
+
+            this.fetchWeekBookings();
+        },
+        calendarSetPreviousMonth() {
+            if (0 == this.calendar.shownMonth) {
+                this.calendar.shownYear--;
+                this.calendar.shownMonth = 11;
+            }
+            else {
+                this.calendar.shownMonth--;
+            }
+        },
+        calendarSetNextMonth() {
+            if (11 == this.calendar.shownMonth) {
+                this.calendar.shownYear++;
+                this.calendar.shownMonth = 0;
+            }
+            else {
+                this.calendar.shownMonth++;
+            }
+        },
+        isRowSelected(rowValueList, row) {
+            if (this.calendar.shownMonth != this.calendar.selectedMonth) {
+                // Check if the last week of the previous month is selected
+                if (1 == row) {
+                    // The current month started on the first, so no previous month is visible
+                    if (1 == rowValueList[0]) return false;
+                    // Make sure the month matches
+                    const previousMonth = this.calendar.shownMonth == 0 ? 11 : this.calendar.shownMonth-1;
+                    if (previousMonth != this.calendar.selectedMonth) return false;
+                    // Make sure the year matches
+                    const previousMonthYear = previousMonth == 11 ? this.calendar.shownYear-1 : this.calendar.shownYear;
+                    if (previousMonthYear != this.calendar.selectedYear) return false;
+                    
+                    const previousMonthLastDay = rowValueList.reduce((a, b) => { return (a > b) ? a : b });
+
+                    return this.calendar.selectedWeek == this.getDayRow(previousMonthLastDay, previousMonth, previousMonthYear);
+                }
+                // Check if the first weeks of the next month are selected
+                else if (3 < row && 14 >= rowValueList.reduce((a, b) => { return (a < b) ? a : b })) {
+                    const nextMonthWeekFirstDay = rowValueList.reduce((a, b) => { return (a < b) ? a : b });
+                    const nextMonth = this.calendar.shownMonth == 11 ? 0 : this.calendar.shownMonth+1;
+                    if (nextMonth != this.calendar.selectedMonth) return false;
+                    const nextMonthYear = nextMonth == 0 ? this.calendar.shownYear+1 : this.calendar.shownYear;
+                    if (nextMonthYear != this.calendar.selectedYear) return false;
+
+                    return this.calendar.selectedWeek == this.getDayRow(nextMonthWeekFirstDay, nextMonth, nextMonthYear);
+                }
+                
+                return false;
+            }
+            else if (this.calendar.selectedYear != this.calendar.shownYear) return false;
+            else return row == this.calendar.selectedWeek;
+        },
+        isDayOfPreviousMonth(day, row) {
+            return row == 1 && day > 7;
+        },
+        isDayOfNextMonth(day, row) {
+            return (row == 5 || row == 6) && day <= 14;
         },
         message(text, status=200, secondsToLive=10) {
             const id = this.__nextMessageId;
@@ -241,8 +480,16 @@ document.app = createApp({
             else if (false == this.bookedTimestamps[startTime].userId) return true;
             else return this.bookedTimestamps[startTime].userId;
         },
+        weekRange() {
+            const startDay = new Date(this.weekStartTimestamp * 1000);
+            const endDay = new Date(this.weekEndTimestamp * 1000);
+            return this.dayMonthFromTimestamp(startDay.valueOf() / 1000) + ' - ' + this.dayMonthFromTimestamp(endDay.valueOf() / 1000);
+        },
+        dayMonthFromTimestamp(timestamp) {
+            const date = new Date(timestamp * 1000);
+            return String(date.getDate()).padStart(2, '0') + '.' + String(date.getMonth()+1).padStart(2, '0') + '.';
+        },
         timeFromRowTimestamp(rowTimestamp) {
-            
             let date = new Date(0);
             date.setHours(0);
             date.setSeconds(rowTimestamp);
@@ -253,17 +500,17 @@ document.app = createApp({
 
             return hours + ":" + minutes;
         },
-        getWeekStartTimestamp() {
-            var d = new Date();
-            var day = d.getDay(),
-            diff = d.getDate() - day + (day == 0 ? -6 : 1);
-            return Math.floor((new Date(d.setDate(diff))).setHours(0, 0, 0, 0) / 1000);
+        getWeekStartTimestamp(date=null) {
+            var d = date ? date : new Date();
+            var day = d.getDay();
+            var diff = d.getDate() - day + (day == 0 ? -6 : 1);
+            const newTimestamp = (new Date(d.setDate(diff))).setHours(0, 0, 0, 0)
+            return Math.floor(newTimestamp / 1000);
         },
-        getWeekEndTimestamp() {
-            var d = new Date();
-            var day = d.getDay(),
-            diff = d.getDate() - day + 7;
-            return Math.floor((new Date(d.setDate(diff))).setHours(23, 59, 59, 0) / 1000);
+        getWeekEndTimestamp(date=null) {
+            var weekStartDate = new Date(this.getWeekStartTimestamp(date) * 1000);
+            weekStartDate.setDate(weekStartDate.getDate() + 6);
+            return Math.floor(weekStartDate.setHours(23, 59, 59, 0) / 1000);
         },
         getQueryParameters() {
             var query_vars_raw = window.location.search.substring(1).split("&");
@@ -411,6 +658,134 @@ document.app = createApp({
     .container {
         overflow-x: auto;
     }
+
+    a {
+        cursor: pointer;
+    }
+
+    /** Calendar */
+    .calendar-wrapper {
+        position: relative;
+    }
+
+    .calendar {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 50%;
+        transform: translatex(-50%);
+        z-index: 100;
+        background-color: white;
+        border: 2px solid lightgray;
+    }
+
+    .calendar::before {
+        content: "";
+        border-bottom: 20px solid lightgray;
+        border-left: 20px solid transparent;
+        border-right: 20px solid transparent;
+        position: absolute;
+        left: 50%;
+        top: -20px;
+        transform: translatex(-50%);
+    }
+
+    .calendar-navigation {
+        border-bottom: 2px solid lightgray;
+        padding: 4px;
+    }
+
+    .calendar-navigation > * {
+        display: inline-block;
+        width: 20%;
+        margin: 0;
+        text-align: center;
+        font-size: 20px;
+        padding: 3px 0;
+        border-radius: 5px;
+        color: #9d9d9d;
+    }
+
+    .calendar-navigation .today > svg {
+        overflow: visible;
+    }
+
+    .calendar-navigation .today > .hover-show {
+        display: none;   
+    }
+
+    .calendar-navigation .today:focus > .hover-hide, .calendar-navigation .today:hover > .hover-hide, .calendar-navigation .today:active > .hover-hide {
+        display: none;
+    }
+
+    .calendar-navigation .today:focus > .hover-show, .calendar-navigation .today:hover > .hover-show, .calendar-navigation .today:active > .hover-show {
+        display: initial;
+    }
+
+    .calendar-navigation .today > span {
+        background-color: black;
+        border-radius: 50%;
+        height: 20px;
+        width: 20px;
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translatex(-50%);
+    }
+
+    .calendar-navigation > *:focus, .calendar-navigation > *:hover, .calendar-navigation > *:active {
+        background-color: darkgray;
+        color: white;
+    }
+
+    .month-header {
+        text-align: center;
+        font-weight: bold;
+        font-size: 22px;
+    }
+
+    .month-body thead {
+        border-bottom: 1px solid;
+    }
+
+    .month-body thead th {
+        padding: 0px 5px;
+        font-weight: normal;
+    }
+
+    .month-body tbody {
+        cursor: pointer;
+    }
+
+    .month-body tbody td {
+        text-align: center;
+        width: 40px;
+        height: 40px;
+        font-weight: bold;
+        padding: 0;
+    }
+
+    .month-body tbody .day {
+        width: 36px;
+        height: 36px;
+        display: block;
+        line-height: 32px;
+        padding: 2px;
+    }
+
+    .month-body tbody td .day:focus, .month-body tbody td .day:hover, .month-body tbody td .day:active {
+        background-color: lightgray;
+        border-radius: 50%;
+    }
+
+    .month-body tbody .day.previous-month, .month-body tbody .day.next-month {
+        font-weight: normal;
+    }
+
+    .month-body tbody tr.selected .day {
+        color: blue;
+    }
+
     /** Notifications **/
     .notification-wrapper {
         padding: 10px 20px;
@@ -464,7 +839,7 @@ document.app = createApp({
     }
 
     .session-overview thead th {
-        width: 150px;
+        width: 175px;
     }
 
     .session-overview button, .session-overview span {
