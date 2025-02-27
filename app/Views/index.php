@@ -1,5 +1,23 @@
 <?php
 $title = 'Session Booking';
+$additionalStyles= '';
+
+$eventMarkingList = [
+    [
+        'startTimestamp' => strtotime("25.02.2025 05:0:0"),
+        'endTimestamp' => strtotime("07.03.2025 0:0:0"),
+        'color' => '#02cbb8',
+        'title' => '24/7 Gebet',
+        'description' => "Lorem Ipsem\nasdadsfs wergm erpg pwef"
+    ]
+];
+
+foreach($eventMarkingList as $i => &$marking) {
+    $marking['cssClasses'] = 'event-marking-' . $i;
+    $additionalStyles .= "." . $marking['cssClasses'] . " {
+        border-color: " . $marking['color'] . ";
+    }";
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -45,6 +63,10 @@ $title = 'Session Booking';
     
     <!-- main content -->
     <div class="container">
+        <div class="legend-wrapper">
+            <span class="legend-item" v-for="marking in eventMarkingList" :class="marking.cssClasses">{{ marking.title }}<small class="legend-description">{{ marking.description }}</small></span>
+        </div>
+
         <!-- week navigation -->
         <nav aria-label="Week navigation" class="calendar-wrapper">
             <ul class="pagination pagination-lg justify-content-center">
@@ -124,7 +146,7 @@ $title = 'Session Booking';
             <tbody>
                 <tr v-for="rowTimestamp in rowsTimestampsList">
                     <th scope="row">{{ timeFromRowTimestamp(rowTimestamp) }}</th>
-                    <td v-for="(_, addDay) in 7" :col-id="addDay">
+                    <td v-for="(_, addDay) in 7" :col-id="addDay" :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
                         <span v-if="true == timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="booked"></span>
                         <span v-else-if="false == userId" class="free"></span>
                         <button v-else-if="userId == timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="own" @click="deleteBookedSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
@@ -269,7 +291,8 @@ document.app = createApp({
                     '<?= lang('Views.months.november'); ?>',
                     '<?= lang('Views.months.december'); ?>'
                 ]
-            }
+            },
+            eventMarkingList: <?= json_encode($eventMarkingList); ?>,
         }
     },
     computed: {
@@ -303,6 +326,16 @@ document.app = createApp({
             });
 
 
+        },
+        getEventMarkingClass(timestamp) {
+            var classList = [];
+            this.eventMarkingList.forEach(marking => {
+                if (marking.startTimestamp <= timestamp && timestamp < marking.endTimestamp) {
+                    classList.push(marking.cssClasses);
+                }
+            });
+
+            return classList.join(' ');
         },
         selectPreviousWeek() {
             this.weekStartTimestamp -= 60*60*24*7;
@@ -882,6 +915,19 @@ document.app = createApp({
         /*background-image: url("<?php echo base_url(); ?>img/calendar-check.svg");*/
     }
 
+    /** Event markings */
+    .legend-item {
+        display: inline-block;
+        border: 4px solid;
+        padding: 8px 16px;
+    }
+
+    .legend-description {
+        display: block;
+        font-size: 12px;
+        white-space: pre-line;
+    }
+<?= $additionalStyles ?>
 </style>
 
 </body>
