@@ -8,6 +8,8 @@ return [
     'close' => 'Schließen',
     'toggle_navigation' => 'Navigation umschalten',
     'request_login_link' => 'Login Link anfordern',
+    'already_have_an_account_then_login' => 'Hast du bereits einen Account? Dann hier Login Link anfordern.',
+    'no_account_yet_then_register' => 'Noch keinen Account? Dann hier registrieren.',
     'weekdays' => [
         'long' => [
             'monday' => 'Monat',

@@ -8,6 +8,8 @@ return [
     'close' => 'Close',
     'toggle_navigation' => 'Toggle navigation',
     'request_login_link' => 'Request login link',
+    'already_have_an_account_then_login' => 'Already have an account? Then request login link.',
+    'no_account_yet_then_register' => 'No account yet? Then register here.',
     'weekdays' => [
         'long' => [
             'monday' => 'Monday',

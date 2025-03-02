@@ -1,11 +1,16 @@
 <?php
-$title = 'Session Booking';
+$title = 'Buchungen - Gebetshaus Ravensburg';
 $additionalStyles= '';
+
+$configs = [
+    'daysInAWeek' => 8,
+    'weekStartTimestamp' => strtotime("06.04.2025 0:0:0"),
+];
 
 $eventMarkingList = [
     [
-        'startTimestamp' => strtotime("25.02.2025 05:0:0"),
-        'endTimestamp' => strtotime("07.03.2025 0:0:0"),
+        'startTimestamp' => strtotime("06.04.2025 18:0:0"),
+        'endTimestamp' => strtotime("13.04.2025 19:0:0"),
         'color' => '#02cbb8',
         'title' => '24/7 Gebet',
         'description' => "Lorem Ipsem\nasdadsfs wergm erpg pwef"
@@ -96,7 +101,7 @@ foreach($eventMarkingList as $i => &$marking) {
                     <button class="page-link" @click="calendar.shownYear++">&raquo;</button>
                 </nav>
                 <div class="calendar-body">
-                    <div class="month-header">{{ calendar.monthNames[calendar.shownMonth] }} {{ calendar.shownYear }}</div>
+                    <div class="month-header">{{ lang.monthNames[calendar.shownMonth] }} {{ calendar.shownYear }}</div>
                     <div class="month-body">
                         <table>
                             <thead>
@@ -134,21 +139,15 @@ foreach($eventMarkingList as $i => &$marking) {
             <thead style="position: sticky; top: 0">
                 <tr style="background-color: white;">
                     <td></td>
-                    <th scope="col" :col-id="0"><?= lang('Views.weekdays.long.monday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp) }}</th>
-                    <th scope="col" :col-id="1"><?= lang('Views.weekdays.long.tuesday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24) }}</th>
-                    <th scope="col" :col-id="2"><?= lang('Views.weekdays.long.wednesday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*2) }}</th>
-                    <th scope="col" :col-id="3"><?= lang('Views.weekdays.long.thursday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*3) }}</th>
-                    <th scope="col" :col-id="4"><?= lang('Views.weekdays.long.friday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*4) }}</th>
-                    <th scope="col" :col-id="5"><?= lang('Views.weekdays.long.saturday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*5) }}</th>
-                    <th scope="col" :col-id="6"><?= lang('Views.weekdays.long.sunday'); ?> - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*6) }}</th>
+                    <th scope="col" v-for="(day, dayIndex) in configs.daysInAWeek" :col-id="dayIndex">{{ weekDayNameFromTimestamp(weekStartTimestamp + 60*60*24*dayIndex) }} - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*dayIndex) }}</th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="rowTimestamp in rowsTimestampsList">
                     <th scope="row">{{ timeFromRowTimestamp(rowTimestamp) }}</th>
-                    <td v-for="(_, addDay) in 7" :col-id="addDay" :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
+                    <td v-for="(_, addDay) in configs.daysInAWeek" :col-id="addDay" :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
                         <span v-if="true == timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="booked"></span>
-                        <span v-else-if="false == userId" class="free"></span>
+                        <span v-else-if="false == userId" class="free" data-bs-toggle="modal" data-bs-target="#registrationModal"></span>
                         <button v-else-if="userId == timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="own" @click="deleteBookedSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
                         <button v-else class="free" @click="bookSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
                     </td>
@@ -166,7 +165,9 @@ foreach($eventMarkingList as $i => &$marking) {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= lang('Views.close'); ?>"></button>
             </div>
             <div class="modal-body">
-                <form>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal"><?= lang('Views.already_have_an_account_then_login'); ?></a>
+                <br><br>
+                <form action="#">
                     <div class="mb-3">
                         <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.firstname.label'); ?>:</label>
                         <input type="text" class="form-control" v-model="registrationData.firstname">
@@ -198,7 +199,9 @@ foreach($eventMarkingList as $i => &$marking) {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= lang('Views.close'); ?>"></button>
             </div>
             <div class="modal-body">
-                <form>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#registrationModal"><?= lang('Views.no_account_yet_then_register'); ?></a>
+                <br><br>
+                <form action="#">
                     <div class="mb-3">
                         <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.email.label'); ?>:</label>
                         <input type="email" class="form-control" v-model="loginEmail">
@@ -261,14 +264,13 @@ document.app = createApp({
             loginEmail: "",
             messageList: {},
             __nextMessageId: 1,
+            __weekStartTimestamp: null,
             config: {
                 session: {
                     interval: 60 * 60,
                     offset: 0,
                 },
             },
-            weekStartTimestamp: self.getWeekStartTimestamp(),
-            weekEndTimestamp: self.getWeekEndTimestamp(),
             bookedTimestamps: {},
             calendar: {
                 show: false,
@@ -277,6 +279,10 @@ document.app = createApp({
                 selectedWeek: self.selectedWeekFromDate((new Date()).getDate()),
                 selectedMonth: (new Date()).getMonth(),
                 selectedYear: (new Date()).getFullYear(),
+            },
+            eventMarkingList: <?= json_encode($eventMarkingList); ?>,
+            configs: <?= json_encode($configs); ?>,
+            lang: {
                 monthNames: [
                     '<?= lang('Views.months.january'); ?>',
                     '<?= lang('Views.months.february'); ?>',
@@ -290,12 +296,41 @@ document.app = createApp({
                     '<?= lang('Views.months.october'); ?>',
                     '<?= lang('Views.months.november'); ?>',
                     '<?= lang('Views.months.december'); ?>'
-                ]
+                ],
+                dayNames: [
+                    '<?= lang('Views.weekdays.long.monday'); ?>',
+                    '<?= lang('Views.weekdays.long.tuesday'); ?>',
+                    '<?= lang('Views.weekdays.long.wednesday'); ?>',
+                    '<?= lang('Views.weekdays.long.thursday'); ?>',
+                    '<?= lang('Views.weekdays.long.friday'); ?>',
+                    '<?= lang('Views.weekdays.long.saturday'); ?>',
+                    '<?= lang('Views.weekdays.long.sunday'); ?>',
+                ],
             },
-            eventMarkingList: <?= json_encode($eventMarkingList); ?>,
         }
     },
     computed: {
+        weekStartTimestamp: {
+            get() {
+                if (null == this.__weekStartTimestamp) {
+                    this.__weekStartTimestamp = this.configs.weekStartTimestamp;
+
+                    const date = new Date(this.__weekStartTimestamp * 1000);
+                    this.calendar.selectedMonth = this.calendar.shownMonth = date.getMonth();
+                    this.calendar.selectedYear = this.calendar.shownYear = date.getFullYear();
+                    this.calendar.selectedWeek = this.selectedWeekFromDate(date.getDate());
+
+                    return this.__weekStartTimestamp;
+                }
+                else return this.__weekStartTimestamp;
+            },
+            set(value) {
+                this.__weekStartTimestamp = value;
+            },
+        },
+        weekEndTimestamp() {
+            return this.weekStartTimestamp + this.configs.daysInAWeek*24*60*60 + 23*60*60;
+        },
         rowsTimestampsList() {
             var response = [];
             for (let rowTimestamp = this.config.session.offset; rowTimestamp < 24*60*60; rowTimestamp+=this.config.session.interval) {
@@ -327,6 +362,12 @@ document.app = createApp({
 
 
         },
+        weekDayNameFromTimestamp(timestamp) {
+            const date = new Date(timestamp * 1000);
+            var weekday = date.getDay() == 0 ? 7 : date.getDay();
+            weekday--;
+            return this.lang.dayNames[weekday];
+        },
         getEventMarkingClass(timestamp) {
             var classList = [];
             this.eventMarkingList.forEach(marking => {
@@ -339,7 +380,6 @@ document.app = createApp({
         },
         selectPreviousWeek() {
             this.weekStartTimestamp -= 60*60*24*7;
-            this.weekEndTimestamp -= 60*60*24*7;
 
             const date = new Date(this.weekStartTimestamp * 1000);
             this.calendar.shownYear = this.calendar.selectedYear = date.getFullYear();
@@ -350,7 +390,6 @@ document.app = createApp({
         },
         selectNextWeek() {
             this.weekStartTimestamp += 60*60*24*7;
-            this.weekEndTimestamp += 60*60*24*7;
 
             const date = new Date(this.weekStartTimestamp * 1000);
             this.calendar.shownYear = this.calendar.selectedYear = date.getFullYear();
@@ -409,7 +448,6 @@ document.app = createApp({
             // Set week timestamps
             const dayOfTheWeek = new Date(this.calendar.selectedYear, this.calendar.selectedMonth, day)
             this.weekStartTimestamp = this.getWeekStartTimestamp(dayOfTheWeek);
-            this.weekEndTimestamp = this.getWeekEndTimestamp(dayOfTheWeek);
 
             this.fetchWeekBookings();
         },
@@ -420,14 +458,13 @@ document.app = createApp({
             }
         },
         calendarSetToday() {
-            const today = new Date();
+            const today = new Date(this.configs.weekStartTimestamp * 1000);
             this.calendar.selectedMonth = this.calendar.shownMonth = today.getMonth();
             this.calendar.selectedYear = this.calendar.shownYear = today.getFullYear();
             this.calendar.selectedWeek = this.getDayRow(today.getDate(), this.calendar.shownMonth, this.calendar.shownYear);
 
             // Set week timestamps
-            this.weekStartTimestamp = this.getWeekStartTimestamp(today);
-            this.weekEndTimestamp = this.getWeekEndTimestamp(today);
+            this.weekStartTimestamp = this.configs.weekStartTimestamp
 
             this.fetchWeekBookings();
         },
@@ -514,9 +551,7 @@ document.app = createApp({
             else return this.bookedTimestamps[startTime].userId;
         },
         weekRange() {
-            const startDay = new Date(this.weekStartTimestamp * 1000);
-            const endDay = new Date(this.weekEndTimestamp * 1000);
-            return this.dayMonthFromTimestamp(startDay.valueOf() / 1000) + ' - ' + this.dayMonthFromTimestamp(endDay.valueOf() / 1000);
+            return this.dayMonthFromTimestamp(this.weekStartTimestamp) + ' - ' + this.dayMonthFromTimestamp(this.weekEndTimestamp);
         },
         dayMonthFromTimestamp(timestamp) {
             const date = new Date(timestamp * 1000);
@@ -539,11 +574,6 @@ document.app = createApp({
             var diff = d.getDate() - day + (day == 0 ? -6 : 1);
             const newTimestamp = (new Date(d.setDate(diff))).setHours(0, 0, 0, 0)
             return Math.floor(newTimestamp / 1000);
-        },
-        getWeekEndTimestamp(date=null) {
-            var weekStartDate = new Date(this.getWeekStartTimestamp(date) * 1000);
-            weekStartDate.setDate(weekStartDate.getDate() + 6);
-            return Math.floor(weekStartDate.setHours(23, 59, 59, 0) / 1000);
         },
         getQueryParameters() {
             var query_vars_raw = window.location.search.substring(1).split("&");
