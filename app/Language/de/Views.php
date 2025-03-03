@@ -12,7 +12,7 @@ return [
     'no_account_yet_then_register' => 'Noch keinen Account? Dann hier registrieren.',
     'weekdays' => [
         'long' => [
-            'monday' => 'Monat',
+            'monday' => 'Montag',
             'tuesday' => 'Dienstag',
             'wednesday' => 'Mittwoch',
             'thursday' => 'Donnerstag',
