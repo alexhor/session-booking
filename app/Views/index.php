@@ -20,7 +20,7 @@ $eventMarkingList = [
 foreach($eventMarkingList as $i => &$marking) {
     $marking['cssClasses'] = 'event-marking-' . $i;
     $additionalStyles .= "." . $marking['cssClasses'] . " {
-        border-color: " . $marking['color'] . ";
+        border-color: " . $marking['color'] . " !important;
     }";
 }
 ?>
@@ -154,6 +154,27 @@ foreach($eventMarkingList as $i => &$marking) {
                 </tr>
             </tbody>
         </table>
+        <div class="session-overview-mobile">
+            <div class="day" v-for="(_, addDay) in configs.daysInAWeek" :class="{ active: addDay == calendar.mobileSelectedDay }">
+                <div class="row heading sticky-top">
+                    <div class="time"></div>
+                    <div class="booking">
+                        <button @click="sessionOverviewMobilePreviousDay()">&lt;</button>
+                        <span>{{ weekDayNameFromTimestamp(weekStartTimestamp + 60*60*24*addDay) }} - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*addDay) }}</span>
+                        <button @click="sessionOverviewMobileNextDay()">&gt;</button>
+                    </div>
+                </div>
+                <div v-for="rowTimestamp in rowsTimestampsList" class="row">
+                    <div class="time">{{ timeFromRowTimestamp(rowTimestamp) }}</div>
+                    <div class="booking" :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
+                        <span v-if="true == timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="booked"></span>
+                        <span v-else-if="false == userId" class="free" data-bs-toggle="modal" data-bs-target="#registrationModal"></span>
+                        <button v-else-if="userId == timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="own" @click="deleteBookedSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
+                        <button v-else class="free" @click="bookSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- registration modal -->
@@ -279,6 +300,7 @@ document.app = createApp({
                 selectedWeek: self.selectedWeekFromDate((new Date()).getDate()),
                 selectedMonth: (new Date()).getMonth(),
                 selectedYear: (new Date()).getFullYear(),
+                mobileSelectedDay: 0,
             },
             eventMarkingList: <?= json_encode($eventMarkingList); ?>,
             configs: <?= json_encode($configs); ?>,
@@ -361,6 +383,24 @@ document.app = createApp({
             });
 
 
+        },
+        sessionOverviewMobilePreviousDay() {
+            if (0 == this.calendar.mobileSelectedDay) {
+                this.calendar.mobileSelectedDay = this.configs.daysInAWeek - 1 - (this.configs.daysInAWeek - 7);
+                this.selectPreviousWeek();
+            }
+            else {
+                this.calendar.mobileSelectedDay--;
+            }
+        },
+        sessionOverviewMobileNextDay() {
+            if (this.configs.daysInAWeek - 1 == this.calendar.mobileSelectedDay) {
+                this.calendar.mobileSelectedDay = this.configs.daysInAWeek - 7;
+                this.selectNextWeek();
+            }
+            else {
+                this.calendar.mobileSelectedDay++;
+            }
         },
         weekDayNameFromTimestamp(timestamp) {
             const date = new Date(timestamp * 1000);
@@ -718,10 +758,6 @@ document.app = createApp({
 
 <style>
     /** General **/
-    .container {
-        overflow-x: auto;
-    }
-
     a {
         cursor: pointer;
     }
@@ -874,7 +910,7 @@ document.app = createApp({
         border-collapse: separate;
         table-layout: fixed;
     }
-    .session-overview th, .session-overview td {
+    .session-overview th, .session-overview td, .session-overview-mobile .heading > .booking, .session-overview-mobile .row > * {
         border-width: 2px;
     }
 
@@ -888,12 +924,12 @@ document.app = createApp({
         background-color: var(--bs-table-hover-bg);
     }
 
-    .session-overview tbody th {
+    .session-overview tbody th, .session-overview-mobile .heading > * {
         text-align: center;
         vertical-align: middle;
     }
 
-    .session-overview td {
+    .session-overview td, .session-overview .row > * {
         padding: 0;
     }
 
@@ -905,7 +941,7 @@ document.app = createApp({
         width: 175px;
     }
 
-    .session-overview button, .session-overview span {
+    .session-overview button, .session-overview span, .session-overview-mobile button, .session-overview-mobile span {
         background-color: transparent;
         background-repeat: no-repeat;
         background-size: auto 100%;
@@ -919,30 +955,121 @@ document.app = createApp({
         display: block;
     }
 
-    .session-overview button.own {
+    .session-overview button.own, .session-overview-mobile button.own {
         background-color: #d1e7dd;
         background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23198754" class="bi bi-check-lg" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg>');
     }
 
-    .session-overview button.own:focus, .session-overview button.own:hover, .session-overview button.own:active {
+    .session-overview button.own:focus, .session-overview button.own:hover, .session-overview button.own:active,
+    .session-overview-mobile button.own:focus, .session-overview-mobile button.own:hover, .session-overview-mobile button.own:active {
         background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23dc3545" class="bi bi-calendar-x-fill" viewBox="0 0 16 16"><path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M6.854 8.146 8 9.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 10l1.147 1.146a.5.5 0 0 1-.708.708L8 10.707l-1.146 1.147a.5.5 0 0 1-.708-.708L7.293 10 6.146 8.854a.5.5 0 1 1 .708-.708"/></svg>');
         background-size: auto 70%;
     }
 
-    .session-overview button.free:focus, .session-overview button.free:active, .session-overview button.free:hover {
+    .session-overview button.free:focus, .session-overview button.free:active, .session-overview button.free:hover,
+    .session-overview-mobile button.free:focus, .session-overview-mobile button.free:active, .session-overview-mobile button.free:hover {
         background-color: #d1e7dd;
         background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23198754" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0"/><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/></svg>');
         background-size: auto 70%;
     }
 
-    .session-overview span.booked {
+    .session-overview span.booked, .session-overview-mobile span.booked {
         background-color: #fff3cd;
         background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23ffc107" class="bi bi-x" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/></svg>');
         background-size: auto 140%;
     }
 
-    .session-overview span.free {
-        /*background-image: url("<?php echo base_url(); ?>img/calendar-check.svg");*/
+    .session-overview-mobile {
+        display: none;
+        position: relative;
+        width: calc(100% - 20px);
+        margin: auto;
+    }
+
+    .session-overview-mobile .day {
+        display: none;
+    }
+
+    .session-overview-mobile .time, .session-overview-mobile .booking {
+        border-color: lightgray;
+        border-style: solid;
+        display: inline-block;
+    }
+
+    .session-overview-mobile .time {
+        width: 30%;
+    }
+
+    .session-overview-mobile .row.heading {
+        background-color: white;
+        font-weight: bold;
+    }
+
+    .session-overview-mobile .row.heading .time {
+        border-width: 0 2px 2px 0;
+    }
+    
+    .session-overview-mobile .booking {
+        width: 70%;
+        position: relative;
+    }
+
+    .session-overview-mobile .day.active {
+        display: block;
+    }
+
+    .session-overview-mobile .row > * {
+        padding: 0;
+        text-align: center;
+        line-height: 50px;
+    }
+
+    .session-overview-mobile .row.heading > .booking > * {
+        display: inline-block;
+        min-width: 0;
+    }
+
+    .session-overview-mobile .row.heading > .booking > button {
+        width: 30px;
+        height: 30px;
+        min-height: 0;
+        line-height: 26px;
+        color: rgb(13, 110, 253);
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: white;
+    }
+
+    .session-overview-mobile .row.heading > .booking > button:first-child {
+        left: 20px;
+    }
+
+    .session-overview-mobile .row.heading > .booking > button:last-child {
+        right: 20px;
+    }
+
+    .session-overview-mobile .row.heading > .booking > button:focus, .session-overview-mobile .row.heading > .booking > button:hover, .session-overview-mobile .row.heading > .booking > button:active {
+        border: 1px solid rgb(13, 110, 253);
+        border-radius: 4px;
+    }
+
+    .session-overview-mobile .row > .time {
+        font-weight: bold;
+    }
+
+    .session-overview-mobile .row.heading > .booking > span {
+        padding: 0px 20px;
+    }
+
+    @media all and (max-width: 767px) {
+        .session-overview {
+            display: none;
+        }
+
+        .session-overview-mobile {
+            display: block;
+        }
     }
 
     /** Event markings */
