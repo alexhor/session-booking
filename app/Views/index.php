@@ -156,7 +156,7 @@ foreach($eventMarkingList as $i => &$marking) {
         </table>
         <div class="session-overview-mobile">
             <div class="day" v-for="(_, addDay) in configs.daysInAWeek" :class="{ active: addDay == calendar.mobileSelectedDay }">
-                <div class="row heading sticky-top">
+                <div class="row heading">
                     <div class="time"></div>
                     <div class="booking">
                         <button @click="sessionOverviewMobilePreviousDay()">&lt;</button>
@@ -1003,6 +1003,9 @@ document.app = createApp({
     .session-overview-mobile .row.heading {
         background-color: white;
         font-weight: bold;
+        position: sticky;
+        top: 0;
+        z-index: 1;
     }
 
     .session-overview-mobile .row.heading .time {
