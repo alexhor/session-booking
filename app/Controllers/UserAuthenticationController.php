@@ -139,7 +139,11 @@ class UserAuthenticationController extends ResourceController
         return $this->respond(lang('Validation.user_authentication.logout'));
     }
 
-    public function get_loged_in_user() {
+    public function get_logged_in_user() {
         return $this->respond(UserHelper::get_logged_in_user());
+    }
+
+    public function get_logged_in_admin() {
+        return $this->respond(UserHelper::get_logged_in_admin());
     }
 }

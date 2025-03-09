@@ -12,12 +12,14 @@ class SessionBooking extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['user_id', 'start_time'];
+    protected $allowedFields    = ['user_id', 'start_time', 'title', 'title_is_public', 'description', 'description_is_public'];
     protected array $casts = [
         'id' => 'int',
         'user_id' => 'int',
         'start_time' => 'datetime',
         'created_at' => 'datetime',
+        'title_is_public' => 'bool',
+        'description_is_public' => 'bool',
     ];
 
     // Dates
