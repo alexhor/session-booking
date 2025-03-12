@@ -36,6 +36,7 @@ return [
             'valid' => 'Invalid email adress',
             'not_found' => 'No user could be found with this email adress',
             'taken' => 'This email adress is already in use by another user account',
+            'too_long' => 'E-Mail adress ist too long',
         ],
         'firstname' => [
             'label' => 'Firstname',

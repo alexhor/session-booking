@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'no_admin' => 'kein Admin',
     'logout' => 'Logout',
     'register' => 'Registrieren',
     'login' => 'Login',

@@ -38,10 +38,6 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
-        'auth'          => Auth::class,
-        'rest_auth'          => RestAuth::class,
-        'admin'          => Admin::class,
-        'rest_admin'          => RestAdmin::class,
     ];
 
     /**

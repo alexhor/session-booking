@@ -2,18 +2,28 @@
 
 namespace App\Database\Migrations;
 
+use CodeIgniter\Database\Forge;
 use CodeIgniter\Database\Migration;
 
 class UserMigration extends Migration
 {
+    /**
+     * @var string[]
+     */
+    protected array $tables;
+
+    public function __construct(?Forge $forge = null)
+    {
+        parent::__construct($forge);
+
+        /** @var \Config\Auth $authConfig */
+        $authConfig   = config('Auth');
+        $this->tables = $authConfig->tables;
+    }
+
     public function up()
     {
-        $this->forge->addField([
-            'id' => [
-                'type' => 'INT',
-                'unsigned' => true,
-                'unique' => true,
-            ],
+        $fields = [
             'firstname' => [
                 'type' => 'VARCHAR',
                 'constraint' => '100',
@@ -22,20 +32,12 @@ class UserMigration extends Migration
                 'type' => 'VARCHAR',
                 'constraint' => '100',
             ],
-            'email' => [
-                'type' => 'VARCHAR',
-                'constraint' => '100',
-                'unique' => true,
-            ],
-            'created_at datetime default current_timestamp',
-        ]);
-
-        $this->forge->addKey('id', true);
-        $this->forge->createTable('users');
+        ];
+        $this->forge->addColumn($this->tables['users'], $fields);
     }
 
     public function down()
     {
-        $this->forge->dropTable('users');
+        $this->forge->dropColumn($this->tables['users'], ['firstname', 'lastname']);
     }
 }

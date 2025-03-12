@@ -2,10 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Models\User;
-use App\Helpers\UserHelper;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
+use App\Entities\User;
+use Config\Validation;
 
 class UserController extends ResourceController
 {
@@ -15,7 +15,7 @@ class UserController extends ResourceController
     public function __construct()
     {
         helper(['form', 'url', 'session']);
-		$this->user = new User();
+		$this->user = auth()->getProvider();
         $this->session = service('session');
     }
 
@@ -26,7 +26,7 @@ class UserController extends ResourceController
      */
     public function index()
     {
-        if (false === UserHelper::get_logged_in_admin()) return $this->failUnauthorized();
+        if (!auth()->user() || !auth()->user()->can('users.show')) return $this->failUnauthorized();
         $users = $this->user->findAll();
         return $this->respond($users);
     }
@@ -40,11 +40,11 @@ class UserController extends ResourceController
      */
     public function show($id = null)
     {
-        if (false === UserHelper::get_logged_in_admin() && !UserHelper::is_logged_in_user($id)) {
+        if (auth()->user() == null || !(auth()->user()->can('users.show') || user_id() == $id)) {
             return $this->failUnauthorized();
         }
 
-        $user = $this->user->find($id);
+        $user = $this->user->findById($id);
         if ($user) {
             return $this->respond($user);
         }
@@ -75,11 +75,17 @@ class UserController extends ResourceController
             ],
             'email' => [
                 'label' => 'Validation.user.email.label',
-                'rules' => 'required|valid_email|is_unique[users.email]',
+                'rules' => [
+                    'required',
+                    'max_length[254]',
+                    'valid_email',
+                    'is_unique[auth_identities.secret]',
+                ],
                 'errors' => [
                     'required' => 'Validation.user.email.required',
                     'valid_email' => 'Validation.user.email.valid',
                     'is_unique' => 'Validation.user.email.taken',
+                    'max_length' => 'Validation.user.email.too_long',
                 ],
             ],
         ]);
@@ -88,15 +94,20 @@ class UserController extends ResourceController
             return $this->failValidationErrors($this->validator->getErrors());
         }
 
-        $userData = [
+        $userEntityObject = new User([
             'firstname' => $this->request->getVar('firstname'),
             'lastname' => $this->request->getVar('lastname'),
             'email' => $this->request->getVar('email')
-        ];
+        ]);
 
-        $userId = $this->user->insert($userData);
-        if ($userId) {
-            $user = $this->user->find($userId);
+        $is_first_user = 0 == count($this->user->findAll());
+        
+        if ($this->user->save($userEntityObject)) {
+            $user = $this->user->findById($this->user->getInsertID());
+            $this->user->addToDefaultGroup($user);
+            if ($is_first_user) {
+                $user->addGroup('admin');
+            }
             return $this->respond([
                 'data' => $user,
                 'message' => lang('Validation.user.created'),
@@ -114,13 +125,12 @@ class UserController extends ResourceController
      */
     public function update($id = null)
     {
-        if (false === UserHelper::get_logged_in_admin() && !UserHelper::is_logged_in_user($id)) {
+        if (auth()->user() == null || !(auth()->user()->can('users.update') || user_id() == $id)) {
             return $this->failUnauthorized();
         }
 
-        $user = $this->user->find($id);
+        $user = $this->user->findById($id);
         if ($user) {
-
             $validation = $this->validate([
                 'firstname' => [
                     'label' => 'Validation.user.firstname.label',
@@ -138,10 +148,16 @@ class UserController extends ResourceController
                 ],
                 'email' => [
                     'label' => 'Validation.user.email.label',
-                    'rules' => 'required|valid_email',
+                    'rules' => [
+                        'required',
+                        'max_length[254]',
+                        'valid_email',
+                        
+                    ],
                     'errors' => [
                         'required' => 'Validation.user.email.required',
                         'valid_email' => 'Validation.user.email.valid',
+                        'max_length' => 'Validation.user.email.too_long',
                     ],
                 ],
             ]);
@@ -151,11 +167,11 @@ class UserController extends ResourceController
             }
 
             // If email should be changed, make sure it's unique
-            if ($this->request->getVar('email') != $user['email']) {
+            if ($this->request->getVar('email') != $user->email) {
                 $email_validation = $this->validate([
                     'email' => [
                         'label' => 'Validation.user.email.label',
-                        'rules' => 'is_unique[users.email]',
+                        'rules' => 'is_unique[auth_identities.secret]',
                         'errors' => [
                             'is_unique' => 'Validation.user.email.taken',
                         ],
@@ -166,12 +182,11 @@ class UserController extends ResourceController
                 }
             }
 
-            $user = [
-                'id' => $id,
+            $user->fill([
                 'firstname' => $this->request->getVar('firstname'),
                 'lastname' => $this->request->getVar('lastname'),
                 'email' => $this->request->getVar('email')
-            ];
+            ]);
 
             $response = $this->user->save($user);
             if ($response) {
@@ -194,14 +209,17 @@ class UserController extends ResourceController
      */
     public function delete($id = null)
     {
-        if (false === UserHelper::get_logged_in_admin() && !UserHelper::is_logged_in_user($id)) {
+        if (auth()->user() == null || !(auth()->user()->can('users.delete') || user_id() == $id)) {
             return $this->failUnauthorized();
         }
 
-        $user = $this->user->find($id);
+        $user = $this->user->findById($id);
         if ($user) {
-            $response = $this->user->where('id', $id)->delete();
-            if ($response) {
+            if ($this->user->delete($id, true)) {
+                if (user_id() == $id) {
+                    auth()->logout();
+                    session()->destroy();
+                }
                 return $this->respond([
                     'data' => $user,
                     'message' => lang('Validation.user.deleted'),

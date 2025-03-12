@@ -9,8 +9,8 @@ class Home extends BaseController
         return view('index');
     }
 
-    public function login(): string
+    public function admin(): string
     {
-        return view('index');
+        return view('admin');
     }
 }

@@ -6,7 +6,6 @@ use App\Models\SessionBooking;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
 use CodeIgniter\I18n\Time;
-use App\Helpers\UserHelper;
 
 class SessionBookingController extends ResourceController
 {
@@ -17,15 +16,15 @@ class SessionBookingController extends ResourceController
     {
         helper(['form', 'url', 'session']);
 		$this->session_booking = new SessionBooking();
-        $this->session = service('session');
     }
 
     /**
      * Filter out all session booking data the user isn't allowed to see
      */
     protected function filter_session_booking_outgoing_data($session_booking) {
-        // Show full information only to the user who booked the session and admins
-        if (false == UserHelper::get_logged_in_admin() && !UserHelper::is_logged_in_user($session_booking['user_id'])) {
+        // Show full information only to the user who booked the session and users with permission
+        if (auth()->user() != null && (auth()->user()->can('session-bookings.show-details') || user_id() == $session_booking['user_id'])) return $session_booking;
+        else {
             // Always add start time
             $new_session_booking = [
                 'start_time' => $session_booking['start_time'],
@@ -43,7 +42,6 @@ class SessionBookingController extends ResourceController
 
             return $new_session_booking;
         }
-        else return $session_booking;
     }
 
     /**
@@ -89,6 +87,11 @@ class SessionBookingController extends ResourceController
      */
     public function create()
     {
+        // Check correct user is logged in
+        if (null == auth()->user() || !auth()->user()->can('session-bookings.create')) {
+            return $this->failUnauthorized();
+        }
+
         // Validate data
         $validation = $this->validate([
             'user_id' => [
@@ -118,30 +121,31 @@ class SessionBookingController extends ResourceController
             'user_id' => $this->request->getVar('user_id'),
             'start_time' => Time::createFromTimestamp($this->request->getVar('start_time'), Time::now()->getTimezone()),
         ];
-        
-        // Check correct user is logged in
-        if (!UserHelper::is_logged_in_user($session_bookingData['user_id'])) {
-            return $this->failUnauthorized();
-        }
 
         // Check session isn't booked yet
         $existing_session_booking = $this->session_booking->where('start_time', $session_bookingData['start_time'])->findAll();
         if (0 != count($existing_session_booking)) {
             return $this->failResourceExists(lang('Validation.session_booking.taken'));
         }
-
+        
         // Add title if given
-        if (null != $this->request->getPost('title')) {
-            $session_bookingData['title'] = $this->request->getPost('title');
-            if (false != UserHelper::get_logged_in_admin() && null != $this->request->getPost('title_is_public')) {
-                $session_bookingData['title_is_public'] = $this->request->getPost('title_is_public');
+        if (null != $this->request->getVar('title')) {
+            $session_bookingData['title'] = $this->request->getVar('title');
+            if (auth()->user()->can('session-bookings.set-details-public') && null != $this->request->getVar('title_is_public')) {
+                $session_bookingData['title_is_public'] = $this->request->getVar('title_is_public');
+            }
+            else {
+                $session_bookingData['title_is_public'] = false;
             }
         }
         // Add description if given
-        if (null != $this->request->getPost('description')) {
-            $session_bookingData['description'] = $this->request->getPost('description');
-            if (false != UserHelper::get_logged_in_admin() && null != $this->request->getPost('description_is_public')) {
-                $session_bookingData['description_is_public'] = $this->request->getPost('description_is_public');
+        if (null != $this->request->getVar('description')) {
+            $session_bookingData['description'] = $this->request->getVar('description');
+            if (auth()->user()->can('session-bookings.set-details-public') && null != $this->request->getVar('description_is_public')) {
+                $session_bookingData['description_is_public'] = $this->request->getVar('description_is_public');
+            }
+            else {
+                $session_bookingData['description_is_public'] = false;
             }
         }
 
@@ -171,7 +175,7 @@ class SessionBookingController extends ResourceController
         
         $session_booking = $this->session_booking->find($id);
         if ($session_booking) {
-            if (false != UserHelper::get_logged_in_admin() && !UserHelper::is_logged_in_user($session_booking['user_id'])) {
+            if (auth()->user() == null || (!auth()->user()->can('session-bookings.delete') && user_id() != $session_booking['user_id'])) {
                 return $this->failUnauthorized();
             }
             

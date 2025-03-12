@@ -6,21 +6,63 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 $routes->get('/', 'Home::index');
-$routes->get('/login', 'Home::login');
+$routes->get('/admin', 'Home::admin');
+
+// TODO: integrate Codeigniter shield
+// TODO: add email reminder 24h before a booked session
+
+// TODO: add email confirmation for (un)booking a session
+// TOOD: validate session length and offset
+
+// TODO: add test for unauthorized response for user self delete
 
 
-$routes->get('users/authentication/login', 'UserAuthenticationController::get_loged_in_user');
-$routes->post('users/authentication/login', 'UserAuthenticationController::login_user');
-$routes->post('users/authentication/logout', 'UserAuthenticationController::logout_user');
-$routes->post('users/authentication', 'UserAuthenticationController::create_token');
+/**
+$email = emailer(['mailType' => 'html'])
+    ->setFrom(setting('Email.fromEmail'), setting('Email.fromName') ?? '');
+$email->setTo($user->email);
+$email->setSubject(lang('Auth.magicLinkSubject'));
+$email->setMessage($this->view(
+    setting('Auth.views')['magic-link-email'],
+    ['token' => $token, 'ipAddress' => $ipAddress, 'userAgent' => $userAgent, 'date' => $date],
+    ['debug' => false]
+));
+ */
 
-$routes->get('users', 'UserController::index', ['filter' => 'rest_admin']);
-$routes->get('users/(:num)', 'UserController::show/$1', ['filter' => 'rest_auth']);
+
+
+# Some (validation) error occured during email sending or token validation
+$routes->get('magic-link', 'Home::index');
+$routes->get('login', 'Home::index');
+#TODO: show errors in ui
+#->with('errors', $this->validator->getErrors());
+#->with('error', lang('Auth.invalidEmail'));
+#->with('error', lang('Auth.magicLinkDisabled'));
+#->with('error', lang('Auth.magicTokenNotFound'));
+#TODO: repopulate registration form with user data
+#->withInput()
+
+
+# Send token via email and inform user what's happening now
+$routes->post('users/authentication', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginAction');
+# Link in the email points here
+$routes->get('verify-magic-link', '\CodeIgniter\Shield\Controllers\MagicLinkController::verify');
+# Logout user
+$routes->post('users/authentication/logout', 'UserAuthenticationController::logoutAction');
+# Get data of logged in user
+$routes->get('users/authentication/login', 'UserAuthenticationController::get_logged_in_user');
+# Check if the logged in user is an admin
+$routes->get('users/admin', 'UserAuthenticationController::is_admin');
+
+# User actions
+$routes->get('users', 'UserController::index');
+$routes->get('users/(:num)', 'UserController::show/$1');
 $routes->post('users', 'UserController::create');
-$routes->put('users/(:num)', 'UserController::update/$1', ['filter' => 'rest_auth']);
-$routes->delete('users/(:num)', 'UserController::delete/$1', ['filter' => 'rest_auth']);
+$routes->put('users/(:num)', 'UserController::update/$1');
+$routes->delete('users/(:num)', 'UserController::delete/$1');
 
+# Session booking actions
 $routes->get('sessions/bookings/(:num)', 'SessionBookingController::show/$1');
 $routes->get('sessions/bookings/(:num)/(:num)', 'SessionBookingController::get_by_range/$1/$2');
-$routes->delete('sessions/bookings/(:num)', 'SessionBookingController::delete/$1', ['filter' => 'rest_auth']);
-$routes->post('sessions/bookings', 'SessionBookingController::create', ['filter' => 'rest_auth']);
+$routes->delete('sessions/bookings/(:num)', 'SessionBookingController::delete/$1');
+$routes->post('sessions/bookings', 'SessionBookingController::create');

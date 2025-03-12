@@ -1,5 +1,5 @@
 <?php
-$title = 'Buchungen - Gebetshaus Ravensburg';
+$title = 'Buchungen - Gebetshaus Ravensburg - Admin';
 $additionalStyles= '';
 
 $configs = [
@@ -13,7 +13,7 @@ $eventMarkingList = [
         'endTimestamp' => strtotime("13.04.2025 19:0:0"),
         'color' => '#02cbb8',
         'title' => '24/7 Gebet',
-        'description' => ""
+        'description' => "Lorem Ipsem\nasdadsfs wergm erpg pwef"
     ]
 ];
 
@@ -45,11 +45,10 @@ foreach($eventMarkingList as $i => &$marking) {
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <span class="me-auto"></span>
                 <ul v-if="userLoggedIn" class="navbar-nav mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link disabled">{{ userName }}</a></li>
+                    <li class="nav-item"><a class="nav-link disabled">{{ userName }} <span v-if="!userIsAdmin">(<?= lang('Views.no_admin'); ?>)</span></a></li>
                     <li class="nav-item"><a class="nav-link" @click="logout()" href="#"><?= lang('Views.logout'); ?></a></li>
                 </ul>
                 <ul v-else class="navbar-nav mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="modal" data-bs-target="#registrationModal" href="#"><?= lang('Views.register'); ?></a></li>
                     <li class="nav-item"><a class="nav-link" data-bs-toggle="modal" data-bs-target="#loginModal" href="#"><?= lang('Views.login'); ?></a></li>
                 </ul>
             </div>
@@ -68,187 +67,33 @@ foreach($eventMarkingList as $i => &$marking) {
     
     <!-- main content -->
     <div class="container">
-        <div class="legend-wrapper">
-            <span class="legend-item" v-for="marking in eventMarkingList" :class="marking.cssClasses">{{ marking.title }}<small class="legend-description">{{ marking.description }}</small></span>
+        <div v-if="userIsAdmin">
+            Admin logged in
         </div>
-        <br>
-
-        <!-- week navigation -->
-        <nav aria-label="Week navigation" class="calendar-wrapper">
-            <ul class="pagination pagination-lg justify-content-center">
-                <li class="page-item">
-                    <a class="page-link" @click="selectPreviousWeek()" aria-label="Previous">
-                        <span>&laquo;</span>
-                    </a>
-                </li>
-                <li class="page-item"><a class="page-link" @click="calendar.show = !calendar.show">{{ weekRange() }}</a></li>
-                <li class="page-item">
-                    <a class="page-link" @click="selectNextWeek()" aria-label="Next">
-                        <span>&raquo;</span>
-                    </a>
-                </li>
-            </ul>
-
-
-            <div v-if="calendar.show" class="calendar">
-                <nav class="calendar-navigation">
-                    <button class="page-link" @click="calendar.shownYear--">&laquo;</button>
-                    <button class="page-link" @click="calendarSetPreviousMonth()">&lt;</button>
-                    <button class="page-link today" @click="calendarSetToday()">
-                        <svg viewBox="0 0 16 16" width="20px" class="hover-hide"><circle fill="#9d9d9d" cx="8" cy="8" r="8" /></svg>
-                        <svg viewBox="0 0 16 16" width="20px" class="hover-show"><circle fill="white" cx="8" cy="8" r="8" /></svg>
-                    </button>
-                    <button class="page-link" @click="calendarSetNextMonth()">&gt;</button>
-                    <button class="page-link" @click="calendar.shownYear++">&raquo;</button>
-                </nav>
-                <div class="calendar-body">
-                    <div class="month-header">{{ lang.monthNames[calendar.shownMonth] }} {{ calendar.shownYear }}</div>
-                    <div class="month-body">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th><?= lang('Views.weekdays.short.mon'); ?></th>
-                                    <th><?= lang('Views.weekdays.short.tue'); ?></th>
-                                    <th><?= lang('Views.weekdays.short.wed'); ?></th>
-                                    <th><?= lang('Views.weekdays.short.thu'); ?></th>
-                                    <th><?= lang('Views.weekdays.short.fri'); ?></th>
-                                    <th><?= lang('Views.weekdays.short.sat'); ?></th>
-                                    <th><?= lang('Views.weekdays.short.sun'); ?></th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <tr v-for="row in 6"
-                                    :class="{ selected: isRowSelected(calendarDayMatrix[row], row) }">
-                                    <td v-for="col in 7">
-                                        <span class="day"
-                                            :class="{ 'previous-month': isDayOfPreviousMonth(calendarDayMatrix[row][col], row), 'next-month': isDayOfNextMonth(calendarDayMatrix[row][col], row) }"
-                                            @click="selectWeek(calendarDayMatrix[row][col], row)">
-                                            {{ calendarDayMatrix[row][col] }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
-        <!-- session table -->
-        <table class="table table-hover session-overview" cellspacing="0">
-            <thead style="position: sticky; top: 0">
-                <tr style="background-color: white;">
-                    <td></td>
-                    <th scope="col" v-for="(day, dayIndex) in configs.daysInAWeek" :col-id="dayIndex">{{ weekDayNameFromTimestamp(weekStartTimestamp + 60*60*24*dayIndex) }} - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*dayIndex) }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="rowTimestamp in rowsTimestampsList">
-                    <th scope="row">{{ timeFromRowTimestamp(rowTimestamp) }}</th>
-                    <td v-for="(_, addDay) in configs.daysInAWeek" :col-id="addDay" :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
-                        <span v-if="true === timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="booked" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
-                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
-                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
-                        </span>
-                        <span v-else-if="false == userId" class="free" data-bs-toggle="modal" data-bs-target="#registrationModal"></span>
-                        <button v-else-if="userId == timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="own" @click="deleteBookedSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
-                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
-                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
-                        </button>
-                        <button v-else class="free" @click="bookSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="session-overview-mobile">
-            <div class="day" v-for="(_, addDay) in configs.daysInAWeek" :class="{ active: addDay == calendar.mobileSelectedDay }">
-                <div class="row heading">
-                    <div class="time"></div>
-                    <div class="booking">
-                        <button @click="sessionOverviewMobilePreviousDay()">&lt;</button>
-                        <span>{{ weekDayNameFromTimestamp(weekStartTimestamp + 60*60*24*addDay) }} - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*addDay) }}</span>
-                        <button @click="sessionOverviewMobileNextDay()">&gt;</button>
-                    </div>
-                </div>
-                <div v-for="rowTimestamp in rowsTimestampsList" class="row">
-                    <div class="time">{{ timeFromRowTimestamp(rowTimestamp) }}</div>
-                    <div class="booking" :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
-                    <span v-if="true === timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="booked" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
-                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
-                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
-                        </span>
-                        <span v-else-if="false == userId" class="free" data-bs-toggle="modal" data-bs-target="#registrationModal"></span>
-                        <button v-else-if="userId == timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="own" @click="deleteBookedSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
-                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
-                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
-                        </button>
-                        <button v-else class="free" @click="bookSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
-                    </div>
-                </div>
-            </div>
+        <div v-else>
+            unauthorised
         </div>
     </div>
-
-    <!-- registration modal -->
-    <div class="modal fade" id="registrationModal" tabindex="-1" aria-labelledby="registrationModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="registrationModalLabel"><?= lang('Views.register_new_account'); ?></h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= lang('Views.close'); ?>"></button>
-                </div>
-                <form action="#">
-                    <div class="modal-body">
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal"><?= lang('Views.already_have_an_account_then_login'); ?></a>
-                        <br><br>
-                        <div>
-                            <div class="mb-3">
-                                <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.firstname.label'); ?>:</label>
-                                <input type="text" class="form-control" name="firstname" v-model="registrationData.firstname">
-                            </div>
-                            <div class="mb-3">
-                                <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.lastname.label'); ?>:</label>
-                                <input type="text" class="form-control" name="lastname" v-model="registrationData.lastname">
-                            </div>
-                            <div class="mb-3">
-                                <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.email.label'); ?>:</label>
-                                <input type="email" class="form-control" email="email" v-model="registrationData.email">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="register()"><?= lang('Views.register'); ?></button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
 
     <!-- login modal -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="<?= site_url('users/authentication'); ?>" method="POST" id="login-form">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="loginModalLabel"><?= lang('Views.login'); ?></h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= lang('Views.close'); ?>"></button>
-                    </div>
-                    <div class="modal-body">
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#registrationModal"><?= lang('Views.no_account_yet_then_register'); ?></a>
-                        <br><br>
-                        <div>
-                            <div class="mb-3">
-                                <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.email.label'); ?>:</label>
-                                <input type="email" class="form-control" name="email" v-model="loginEmail">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal"><?= lang('Views.request_login_link'); ?></button>
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="loginModalLabel"><?= lang('Views.login'); ?></h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= lang('Views.close'); ?>"></button>
+            </div>
+            <div class="modal-body">
+                <form action="#">
+                    <div class="mb-3">
+                        <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.email.label'); ?>:</label>
+                        <input type="email" class="form-control" v-model="loginEmail">
                     </div>
                 </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="requestLoginLink()"><?= lang('Views.request_login_link'); ?></button>
+            </div>
             </div>
         </div>
     </div>
@@ -291,14 +136,10 @@ document.app = createApp({
 
         return {
             userLoggedIn: false,
+            userIsAdmin: false,
             userId: false,
             userName: "",
             baseUrl: "<?php echo base_url(); ?>",
-            registrationData: {
-                firstname: "",
-                lastname: "",
-                email: "",
-            },
             loginEmail: "",
             messageList: {},
             __nextMessageId: 1,
@@ -601,32 +442,11 @@ document.app = createApp({
             clearTimeout(this.messageList[id].timeoutId);
             delete this.messageList[id];
         },
-        bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, day) {
-            const booking = this.getBookedTime(weekStartTimestamp, rowTimestamp, day);
-            if (typeof booking.title !== "undefined" && booking.title !== null && booking.title != '') return true;
-            else if (typeof booking.description !== "undefined" && booking.description != null && booking.description != '') return true;
-            else return false;
-        },
-        getBookedTime(weekStartTimestamp, rowTimestamp, day) {
-            const startTime = weekStartTimestamp + rowTimestamp + day*24*60*60;
-            if (!(startTime in this.bookedTimestamps)) {
-                return false;
-            }
-            else {
-                return this.bookedTimestamps[startTime];
-            }
-        },
         timeBooked(weekStartTimestamp, rowTimestamp, day) {
-            const bookedTime = this.getBookedTime(weekStartTimestamp, rowTimestamp, day);
-            if (false == bookedTime) {
-                return false;
-            }
-            else if (false == bookedTime.userId) {
-                return true;
-            }
-            else {
-                return bookedTime.userId;
-            }
+            const startTime = weekStartTimestamp + rowTimestamp + day*24*60*60;
+            if (!(startTime in this.bookedTimestamps)) return false;
+            else if (false == this.bookedTimestamps[startTime].userId) return true;
+            else return this.bookedTimestamps[startTime].userId;
         },
         weekRange() {
             return this.dayMonthFromTimestamp(this.weekStartTimestamp) + ' - ' + this.dayMonthFromTimestamp(this.weekEndTimestamp);
@@ -678,11 +498,20 @@ document.app = createApp({
                 else self.message(response.statusText, response.status);
 
                 self.loginEmail = self.registrationData.email;
-
-                // Redirect to login link fetching
-                Vue.nextTick(function () {
-                    document.getElementById("login-form").submit();
-                });
+                this.requestLoginLink();
+            });
+        },
+        requestLoginLink() {
+            var self = this;
+            axios.post(this.baseUrl + "users/authentication", {
+                email: this.loginEmail,
+            })
+            .then((response) => {
+                if ("data" in response) {
+                    if (typeof response.data !== 'object') self.message(response.data, response.status);
+                    else if ("message" in response.data) self.message(response.data.message, response.status);
+                }
+                else self.message(response.statusText, response.status);
             });
         },
         getLoggedInUser() {
@@ -697,6 +526,15 @@ document.app = createApp({
                     self.userId = parseInt(user_id, 10);
                     self.userLoggedIn = true;
 
+                    // Check if the user is an admin
+                    axios.get(this.baseUrl + "users/authentication/admin/login")
+                    .then((response) => {
+                        console.log(response.data);
+                        if (self.userId == response.data) {
+                            this.userIsAdmin = true;
+                        }
+                    });
+                    // Get users name
                     axios.get(this.baseUrl + "users/" + self.userId)
                     .then((response) => {
                         self.userName = response.data.firstname + " " + response.data.lastname;
@@ -752,11 +590,7 @@ document.app = createApp({
             var self = this;
             axios.post(this.baseUrl + "sessions/bookings", {
                 "user_id": self.userId,
-                "start_time": timestamp,/*
-                "title": "Lobpreis",
-                "title_is_public": 1,
-                "description": "Gemeinsames Ende",
-                "description_is_public": 1,*/
+                "start_time": timestamp,
             })
             .then((response) => {
                 self.fetchWeekBookings();
@@ -776,15 +610,12 @@ document.app = createApp({
             axios.get(this.baseUrl + "sessions/bookings/" + this.weekStartTimestamp + "/" + this.weekEndTimestamp)
             .then((response) => {
                 self.bookedTimestamps = {};
-                for (var sessionBooking of response.data) {
-                    if (sessionBooking.id == "undefined") sessionBooking.id = false;
-                    if (sessionBooking.user_id == "undefined") sessionBooking.user_id = false;
-                    sessionBooking.userId = sessionBooking.user_id;
-                    delete sessionBooking.user_id;
-                    if (sessionBooking.title == "undefined") sessionBooking.title = '';
-                    if (sessionBooking.description == "undefined") sessionBooking.description = '';
-
-                    self.bookedTimestamps[sessionBooking.start_time] = sessionBooking;
+                for (const sessionBooking of response.data) {
+                    self.bookedTimestamps[sessionBooking.start_time] = {
+                        id: typeof sessionBooking.id != "undefined" ? sessionBooking.id : false,
+                        userId: typeof sessionBooking.user_id != "undefined" ? sessionBooking.user_id : false,
+                        startTime: sessionBooking.start_time,
+                    };
                 }
             });
         }
@@ -796,10 +627,6 @@ document.app = createApp({
     /** General **/
     a {
         cursor: pointer;
-    }
-
-    .container {
-        padding-bottom: 50px;
     }
 
     /** Calendar */
@@ -993,17 +820,6 @@ document.app = createApp({
         min-height: 100%;
         height: 50px;
         display: block;
-    }
-
-    .session-overview button.own.no_background_image,
-    .session-overview-mobile button.own.no_background_image,
-    .session-overview span.booked.no_background_image,
-    .session-overview-mobile span.booked.no_background_image {
-        background-image: none;
-    }
-
-    .session-overview-mobile button {
-        line-height: initial;
     }
 
     .session-overview button.own, .session-overview-mobile button.own {

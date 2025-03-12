@@ -35,6 +35,7 @@ return [
             'valid' => 'E-Mail Adresse ist ungültig',
             'not_found' => 'Es konnte kein Benutzer mit dieser E-Mail Adresse gefunden werden',
             'taken' => 'Diese E-Mail Adresse wird bereits von einem anderen Account benutzt',
+            'too_long' => 'E-Mail Adresse ist zu lang',
         ],
         'firstname' => [
             'label' => 'Vorname',

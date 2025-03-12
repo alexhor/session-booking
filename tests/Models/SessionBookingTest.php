@@ -176,7 +176,7 @@ final class SessionBookingTest extends CIUnitTestCase
         $session_booking_model = new SessionBooking();
 
         $range_start = Time::now()->setMinute(0)->setSecond(0)->addHours(2);
-        $range_end = Time::now()->setMinute(0)->setSecond(0)->addHours(14);
+        $range_end = Time::now()->setMinute(0)->setSecond(0)->addHours(101);
         $session_bookings = $session_booking_model->get_by_range($range_start, $range_end);
         $this->assertCount(3, $session_bookings);
     }

@@ -6,64 +6,133 @@ use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
 use Tests\Support\Database\Seeds\UserSeeder;
-use App\Models\User;
+use CodeIgniter\Shield\Test\AuthenticationTesting;
+
+use CodeIgniter\Shield\Authorization\Groups;
 
 class UserControllerTest extends CIUnitTestCase
 {
     use DatabaseTestTrait;
     use FeatureTestTrait;
+    use AuthenticationTesting;
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        $this->clearAuth();
+    }
+
+    protected function clearAuth(): void
+    {
+        auth()->logout();
+        session()->destroy();
+        $this->assertNull(auth()->user());
+    }
 
     public function testGetAllUsers(): void
     {
         $this->seed(UserSeeder::class);
         $response = $this->get('users');
         $response->assertNotOk();
-
-        service('session')->set('admin_logged_in_user_id', 946638323423);
-        $response = $this->withSession()->get('users');
+        
+        // Non admin user
+        $user = auth()->getProvider()->findById(946638323423);
+        $response = $this->actingAs($user)->get('users');
+        $response->assertNotOk();
+        
+        // Admin user
+        $adminUser = auth()->getProvider()->findById(772843);
+        $response = $this->actingAs($adminUser)->get('users');
         $response->assertOk();
         $this->assertCount(4, json_decode($response->getJson(), true));
     }
 
     public function testGetUserNotFound(): void
     {
-        $user_authentication_controller = new UserAuthenticationController();
-        $set_user_logged_in = $this->getPrivateMethodInvoker($user_authentication_controller, 'set_user_logged_in');
-
         $this->expectException(\CodeIgniter\Exceptions\PageNotFoundException::class);
         $this->get('users/nothing');
 
+        // Anonymous
         $response = $this->get('users/123');
         $response->assertNotOk();
         $response->assertStatus(401);
 
         // Login admin
-        service('session')->set('admin_logged_in_user_id', 1234);
-        $set_user_logged_in(1234);
-
+        $adminUser = auth()->getProvider()->findById(772843);
         $this->expectException(\CodeIgniter\Exceptions\PageNotFoundException::class);
-        $this->withSession()->get('users/nothing');
+        $this->actingAs($adminUser)->get('users/nothing');
 
-        $response = $this->withSession()->get('users/123');
+        $response = $this->actingAs($adminUser)->get('users/123');
         $response->assertNotOk();
         $response->assertStatus(404);
-        $this->withSession([])->get('/');
+        $this->get('/');
 
         // Login user
-        $set_user_logged_in(1234);
-
+        $user = auth()->getProvider()->findById(946638323423);
         $this->expectException(\CodeIgniter\Exceptions\PageNotFoundException::class);
-        $this->withSession()->get('users/nothing');
+        $this->actingAs($user)->get('users/nothing');
 
-        $response = $this->withSession()->get('users/123');
+        $response = $this->actingAs($user)->get('users/123');
         $response->assertNotOk();
         $response->assertStatus(401);
     }
+
     public function testGetUser(): void
     {
-        $user_authentication_controller = new UserAuthenticationController();
-        $set_user_logged_in = $this->getPrivateMethodInvoker($user_authentication_controller, 'set_user_logged_in');
-        $user_model = new User();
+        $this->seed(UserSeeder::class);
+
+        // No user logged in
+        $response = $this->get('users/123');
+        $response->assertNotOk();
+        $response->assertStatus(401);
+        $response = $this->get('users/946638323423');
+        $response->assertNotOk();
+        $response->assertStatus(401);
+        $response = $this->get('users/772843');
+        $response->assertNotOk();
+        $response->assertStatus(401);
+
+        // Admin logged in
+        $adminUser = auth()->getProvider()->findById(772843);
+        $response = $this->actingAs($adminUser)->get('users/123');
+        $response->assertNotOk();
+        $response->assertStatus(404);
+
+        $response = $this->actingAs($adminUser)->get('users/946638323423');
+        $response->assertOk();
+        $response_data = json_decode($response->getJson(), true);
+        $this->assertArrayHasKey('id', $response_data);
+        $this->assertArrayHasKey('firstname', $response_data);
+        $this->assertArrayHasKey('lastname', $response_data);
+        $this->assertArrayHasKey('email', $response_data);
+
+        $response = $this->actingAs($adminUser)->get('users/772843');
+        $response->assertOk();
+        $response_data = json_decode($response->getJson(), true);
+        $this->assertArrayHasKey('id', $response_data);
+        $this->assertArrayHasKey('firstname', $response_data);
+        $this->assertArrayHasKey('lastname', $response_data);
+        $this->assertArrayHasKey('email', $response_data);
+
+        // User logged in
+        $user = auth()->getProvider()->findById(946638323423);
+        $response = $this->actingAs($user)->get('users/123');
+        $response->assertNotOk();
+        $response->assertStatus(401);
+        $response = $this->actingAs($user)->get('users/' . $user->id);
+        $response->assertOk();
+        $response_data = json_decode($response->getJson(), true);
+        $this->assertArrayHasKey('id', $response_data);
+        $this->assertArrayHasKey('firstname', $response_data);
+        $this->assertArrayHasKey('lastname', $response_data);
+        $this->assertArrayHasKey('email', $response_data);
+    }
+
+    public function testCreateUser(): void
+    {
+        $user_model = auth()->getProvider();
+        $this->assertCount(0, $user_model->findAll());
+
         $user_data = [
             'firstname' => 'Test',
             'lastname' => 'Testo',
@@ -85,50 +154,10 @@ class UserControllerTest extends CIUnitTestCase
         foreach ($user_data as $key => $_) {
             $this->assertEquals($response_data[$key], $user_data[$key]);
         }
-
         $this->assertCount(1, $user_model->findAll());
-        // No user logged in
-        $response = $this->get('users/' . $response_data['id']);
-        $response->assertNotOk();
-        $response->assertStatus(401);
-
-        // Admin logged in
-        service('session')->set('admin_logged_in_user_id', 1234);
-        $set_user_logged_in(1234);
-        $response = $this->withSession()->get('users/123');
-        $response->assertNotOk();
-        $response->assertStatus(404);
-        $response = $this->withSession()->get('users/' . $response_data['id']);
-        $response->assertOk();
-        $this->withSession([])->get('/');
-
-        // User logged in
-        $set_user_logged_in($response_data['id']);
-        $response = $this->withSession()->get('users/123');
-        $response->assertNotOk();
-        $response->assertStatus(401);
-
-        $response = $this->withSession()->get('users/' . $response_data['id']);
-        $response->assertOk();
-        $response_data = json_decode($response->getJson(), true);
-        foreach ($user_data as $key => $_) {
-            $this->assertEquals($response_data[$key], $user_data[$key]);
-        }
-    }
-
-    public function testCreateUser(): void
-    {
-        $user_model = new User();
-        $this->assertCount(0, $user_model->findAll());
-
-        $user_data = [
-            'firstname' => 'Test',
-            'lastname' => 'Testo',
-            'email' => 'test.testo@example.com',
-        ];
-        $response = $this->withBodyFormat('json')->post('users', $user_data);
-        $response->assertOk();
-        $this->assertCount(1, $user_model->findAll());
+        $user = $user_model->findById($response_data['id']);
+        $this->assertTrue($user->inGroup('user'));
+        $this->assertTrue($user->inGroup('admin'));
 
         $user_data = [
             'firstname' => 'Test2',
@@ -137,78 +166,79 @@ class UserControllerTest extends CIUnitTestCase
         ];
         $response = $this->withBodyFormat('json')->post('users', $user_data);
         $response->assertOk();
-        $this->assertCount(2, $user_model->findAll());
-    }
-
-    public function testDeleteUser(): void
-    {
-        $user_authentication_controller = new UserAuthenticationController();
-        $set_user_logged_in = $this->getPrivateMethodInvoker($user_authentication_controller, 'set_user_logged_in');
-        $user_model = new User();
-        $this->assertCount(0, $user_model->findAll());
-
-        $user_data = [
-            'firstname' => 'Test',
-            'lastname' => 'Testo',
-            'email' => 'test.testo@example.com',
-        ];
-        $response_data = json_decode($this->withBodyFormat('json')->post('users', $user_data)->getJson(), true);
+        $response_data = json_decode($response->getJson(), true);
         $this->assertArrayHasKey('message', $response_data);
         $this->assertIsString($response_data['message']);
         $this->assertArrayHasKey('data', $response_data);
         $this->assertIsArray($response_data['data']);
         $response_data = $response_data['data'];
 
-        $this->assertCount(1, $user_model->findAll());
         $this->assertArrayHasKey('id', $response_data);
         $this->assertArrayHasKey('firstname', $response_data);
         $this->assertArrayHasKey('lastname', $response_data);
         $this->assertArrayHasKey('email', $response_data);
+        foreach ($user_data as $key => $_) {
+            $this->assertEquals($response_data[$key], $user_data[$key]);
+        }
+        $this->assertCount(2, $user_model->findAll());
+        $user = $user_model->findById($response_data['id']);
+        $this->assertTrue($user->inGroup('user'));
+        $this->assertFalse($user->inGroup('admin'));
+    }
+
+    public function testDeleteUser(): void
+    {
+        $this->seed(UserSeeder::class);
+        $user_model = auth()->getProvider();
+        $this->assertCount(4, $user_model->findAll());
 
         // No user logged in
-        $response = $this->delete('users/' . $response_data['id']);
+        $response = $this->delete('users/772843');
         $response = $this->delete('users/123');
         $response->assertNotOk();
         $response->assertStatus(401);
-        $this->assertCount(1, $user_model->findAll());
-        $response = $this->delete('users/' . $response_data['id']);
+        $this->assertCount(4, $user_model->findAll());
+        $response = $this->delete('users/946638323423');
         $response->assertNotOk();
         $response->assertStatus(401);
-        $this->assertCount(1, $user_model->findAll());
+        $this->assertCount(4, $user_model->findAll());
 
         // Admin logged in
-        service('session')->set('admin_logged_in_user_id', 1234);
-        $set_user_logged_in(1234);
-        $response = $this->withSession()->delete('users/123');
+        $adminUser = auth()->getProvider()->findById(772843);
+        $response = $this->actingAs($adminUser)->delete('users/123');
         $response->assertNotOk();
         $response->assertStatus(404);
-        $this->assertCount(1, $user_model->findAll());
-        $response = $this->withSession()->delete('users/' . $response_data['id']);
+        $this->assertCount(4, $user_model->findAll());
+        $response = $this->actingAs($adminUser)->delete('users/946638323423');
         $response->assertOk();
-        $this->assertCount(0, $user_model->findAll());
-        $this->withSession([])->get('/');
+        $this->assertCount(3, $user_model->findAll());
+        $response = $this->actingAs($adminUser)->delete('users/772843');
+        $response->assertOk();
+        $this->assertCount(2, $user_model->findAll());
+        $this->assertNull(auth()->user());
 
-        $response_data = json_decode($this->withSession([])->withBodyFormat('json')->post('users', $user_data)->getJson(), true);
-        $this->assertArrayHasKey('message', $response_data);
-        $this->assertIsString($response_data['message']);
-        $this->assertArrayHasKey('data', $response_data);
-        $this->assertIsArray($response_data['data']);
-        $response_data = $response_data['data'];
-        $this->assertCount(1, $user_model->findAll());
+        $this->regressDatabase();
+        $this->migrateDatabase();
+        $this->seed(UserSeeder::class);
         // User logged in
-        $set_user_logged_in($response_data['id']);
-        $response = $this->withSession()->delete('users/123');
+        $user = auth()->getProvider()->findById(946638323423);
+        $response = $this->actingAs($user)->delete('users/123');
         $response->assertNotOk();
         $response->assertStatus(401);
-        $this->assertCount(1, $user_model->findAll());
-        $response = $this->withSession()->delete('users/' . $response_data['id']);
+        $this->assertCount(4, $user_model->findAll());
+        $response = $this->actingAs($user)->delete('users/772843');
+        $response->assertNotOk();
+        $response->assertStatus(401);
+        $this->assertCount(4, $user_model->findAll());
+        $response = $this->actingAs($user)->delete('users/946638323423');
         $response->assertOk();
-        $this->assertCount(0, $user_model->findAll());
+        $this->assertCount(3, $user_model->findAll());
+        $this->assertNull(auth()->user());
     }
 
     public function testUniqueEmail(): void
     {
-        $user_model = new User();
+        $user_model = auth()->getProvider();
         $this->assertCount(0, $user_model->findAll());
 
         $user_data = [
@@ -233,7 +263,7 @@ class UserControllerTest extends CIUnitTestCase
 
     public function testInvalidEmail(): void
     {
-        $user_model = new User();
+        $user_model = auth()->getProvider();
         $this->assertCount(0, $user_model->findAll());
 
         $user_data = [
@@ -249,7 +279,7 @@ class UserControllerTest extends CIUnitTestCase
 
     public function testMissingValues(): void
     {
-        $user_model = new User();
+        $user_model = auth()->getProvider();
         $this->assertCount(0, $user_model->findAll());
 
         // Email missing
@@ -292,15 +322,14 @@ class UserControllerTest extends CIUnitTestCase
 
     public function testUpdateUser(): void
     {
-        $user_authentication_controller = new UserAuthenticationController();
-        $set_user_logged_in = $this->getPrivateMethodInvoker($user_authentication_controller, 'set_user_logged_in');
-        $user_model = new User();
-        $this->assertCount(0, $user_model->findAll());
+        $this->seed(UserSeeder::class);
+        $user_model = auth()->getProvider();
+        $this->assertCount(4, $user_model->findAll());
 
         $user_data = [
             'firstname' => 'Test',
             'lastname' => 'Testo',
-            'email' => 'test.testo@example.com',
+            'email' => 'test.testo55432@example.com',
         ];
         $response_data = json_decode($this->withBodyFormat('json')->post('users', $user_data)->getJson(), true);
         $this->assertArrayHasKey('message', $response_data);
@@ -308,18 +337,18 @@ class UserControllerTest extends CIUnitTestCase
         $this->assertArrayHasKey('data', $response_data);
         $this->assertIsArray($response_data['data']);
         $response_data = $response_data['data'];
-        $this->assertCount(1, $user_model->findAll());
+        $this->assertCount(5, $user_model->findAll());
 
         // No user logged in, only change some values
         $user_data = [
             'firstname' => 'Test2',
             'lastname' => 'Testo2',
-            'email' => 'test.testo@example.com',
+            'email' => 'test.testo55432@example.com',
         ];
         $response = $this->withBodyFormat('json')->put('users/' . $response_data['id'], $user_data);
         $response->assertNotOk();
         $response->assertStatus(401);
-        $this->assertCount(1, $user_model->findAll());
+        $this->assertCount(5, $user_model->findAll());
 
         // No user logged in, change all values
         $user_data = [
@@ -330,17 +359,16 @@ class UserControllerTest extends CIUnitTestCase
         $response = $this->withBodyFormat('json')->put('users/' . $response_data['id'], $user_data);
         $response->assertNotOk();
         $response->assertStatus(401);
-        $this->assertCount(1, $user_model->findAll());
+        $this->assertCount(5, $user_model->findAll());
 
         // Admin logged in, only change some values
-        service('session')->set('admin_logged_in_user_id', 1234);
-        $set_user_logged_in(1234);
+        $adminUser = auth()->getProvider()->findById(772843);
         $user_data = [
             'firstname' => 'Test2',
             'lastname' => 'Testo2',
-            'email' => 'test.testo@example.com',
+            'email' => 'test.testo55432@example.com',
         ];
-        $response = $this->withSession()->withBodyFormat('json')->put('users/' . $response_data['id'], $user_data);
+        $response = $this->actingAs($adminUser)->withBodyFormat('json')->put('users/' . $response_data['id'], $user_data);
         $response->assertOk();
         $response_data = json_decode($response->getJson(), true);
         $this->assertArrayHasKey('message', $response_data);
@@ -349,7 +377,7 @@ class UserControllerTest extends CIUnitTestCase
         $this->assertIsArray($response_data['data']);
         $response_data = $response_data['data'];
 
-        $this->assertCount(1, $user_model->findAll());
+        $this->assertCount(5, $user_model->findAll());
         foreach ($user_data as $key => $_) {
             $this->assertEquals($user_data[$key], $response_data[$key]);
         }
@@ -360,7 +388,7 @@ class UserControllerTest extends CIUnitTestCase
             'lastname' => 'Te2',
             'email' => 'hello@world.de',
         ];
-        $response = $this->withSession()->withBodyFormat('json')->put('users/' . $response_data['id'], $user_data);
+        $response = $this->actingAs($adminUser)->withBodyFormat('json')->put('users/' . $response_data['id'], $user_data);
         $response->assertOk();
         $response_data = json_decode($response->getJson(), true);
         $this->assertArrayHasKey('message', $response_data);
@@ -369,7 +397,7 @@ class UserControllerTest extends CIUnitTestCase
         $this->assertIsArray($response_data['data']);
         $response_data = $response_data['data'];
 
-        $this->assertCount(1, $user_model->findAll());
+        $this->assertCount(5, $user_model->findAll());
         foreach ($user_data as $key => $_) {
             $this->assertEquals($user_data[$key], $response_data[$key]);
         }
@@ -380,19 +408,28 @@ class UserControllerTest extends CIUnitTestCase
             'lastname' => 'Testo2',
             'email' => 'test.testo15@example.com',
         ];
-        $response = $this->withSession()->withBodyFormat('json')->put('users/123');
+        $response = $this->actingAs($adminUser)->withBodyFormat('json')->put('users/123');
         $response->assertNotOk();
         $response->assertStatus(404);
         $this->withSession([])->get('/');
 
-        // User logged in, change all values
-        $set_user_logged_in($response_data['id']);
+        // User logged in, unauthorised
+        $user = auth()->getProvider()->findById(946638323423);
         $user_data = [
             'firstname' => 'Test',
             'lastname' => 'Testo',
-            'email' => 'test.testo@example.com',
+            'email' => 'test.testo55432@example.com',
         ];
-        $response = $this->withSession()->withBodyFormat('json')->put('users/' . $response_data['id'], $user_data);
+        $response = $this->actingAs($user)->withBodyFormat('json')->put('users/' . $response_data['id'], $user_data);
+        $response->assertNotOk();
+
+        // User logged in, change all values
+        $user_data = [
+            'firstname' => 'Test',
+            'lastname' => 'Testo',
+            'email' => 'test.testo55432@example.com',
+        ];
+        $response = $this->actingAs($user)->withBodyFormat('json')->put('users/' . $user->id, $user_data);
         $response->assertOk();
         $response_data = json_decode($response->getJson(), true);
         $this->assertArrayHasKey('message', $response_data);
@@ -401,7 +438,7 @@ class UserControllerTest extends CIUnitTestCase
         $this->assertIsArray($response_data['data']);
         $response_data = $response_data['data'];
 
-        $this->assertCount(1, $user_model->findAll());
+        $this->assertCount(5, $user_model->findAll());
         foreach ($user_data as $key => $_) {
             $this->assertEquals($user_data[$key], $response_data[$key]);
         }
@@ -410,9 +447,9 @@ class UserControllerTest extends CIUnitTestCase
         $user_data = [
             'firstname' => 'Test2',
             'lastname' => 'Testo2',
-            'email' => 'test.testo@example.com',
+            'email' => 'test.testo55432@example.com',
         ];
-        $response = $this->withSession()->withBodyFormat('json')->put('users/' . $response_data['id'], $user_data);
+        $response = $this->actingAs($user)->withBodyFormat('json')->put('users/' . $user->id, $user_data);
         $response->assertOk();
         $response_data = json_decode($response->getJson(), true);
         $this->assertArrayHasKey('message', $response_data);
@@ -421,7 +458,7 @@ class UserControllerTest extends CIUnitTestCase
         $this->assertIsArray($response_data['data']);
         $response_data = $response_data['data'];
 
-        $this->assertCount(1, $user_model->findAll());
+        $this->assertCount(5, $user_model->findAll());
         foreach ($user_data as $key => $_) {
             $this->assertEquals($user_data[$key], $response_data[$key]);
         }
@@ -432,7 +469,7 @@ class UserControllerTest extends CIUnitTestCase
             'lastname' => 'Testo2',
             'email' => 'test.testo15@example.com',
         ];
-        $response = $this->withSession()->withBodyFormat('json')->put('users/123');
+        $response = $this->actingAs($user)->withBodyFormat('json')->put('users/123', $user_data);
         $response->assertNotOk();
         $response->assertStatus(401);
     }

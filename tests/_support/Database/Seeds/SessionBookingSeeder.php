@@ -16,11 +16,17 @@ class SessionBookingSeeder extends Seeder
                 'id' => 1,
                 'user_id' => 2306585,
                 'start_time' => Time::now()->setMinute(0)->setSecond(0)->addHours(1),
+                'title' => 'Lorem ipsum',
+                'title_is_public' => false,
+                'description' => 'Lorem ipsum',
+                'description_is_public' => false,
             ],
             [
                 'id' => 2,
                 'user_id' => 2306585,
                 'start_time' => Time::now()->setMinute(0)->setSecond(0)->addHours(2),
+                'description' => 'Lorem ipsum',
+                'description_is_public' => false,
             ],
             [
                 'id' => 3,
@@ -30,8 +36,33 @@ class SessionBookingSeeder extends Seeder
             [
                 'id' => 4,
                 'user_id' => 772843,
-                'start_time' => Time::now()->setMinute(0)->setSecond(0)->addHours(8),
-            ]
+                'start_time' => Time::now()->setMinute(0)->setSecond(0)->addHours(101),
+                'title' => 'Lorem ipsum',
+                'title_is_public' => true,
+                'description' => 'Lorem ipsum',
+                'description_is_public' => true,
+            ],
+            [
+                'id' => 5,
+                'user_id' => 772843,
+                'start_time' => Time::now()->setMinute(0)->setSecond(0)->addHours(102),
+                'title' => 'Lorem ipsum',
+                'title_is_public' => false,
+            ],
+            [
+                'id' => 6,
+                'user_id' => 772843,
+                'start_time' => Time::now()->setMinute(0)->setSecond(0)->addHours(103),
+                'description' => 'Lorem ipsum',
+                'description_is_public' => true,
+            ],
+            [
+                'id' => 7,
+                'user_id' => 772843,
+                'start_time' => Time::now()->setMinute(0)->setSecond(0)->addHours(104),
+                'description' => 'Lorem ipsum',
+                'description_is_public' => false,
+            ],
         ];
 
         $builder = $this->db->table('session_bookings');
