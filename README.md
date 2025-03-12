@@ -2,8 +2,10 @@
 Built on CodeIgniter 4 Application Starter
 
 ## Installation & updates
-`composer install --prefer-dist --no-progress`
-`spark migrate --all`
+```
+composer install --prefer-dist --no-progress
+spark migrate --all
+```
 
 ## Setup
 
