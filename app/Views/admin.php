@@ -13,7 +13,7 @@ $eventMarkingList = [
         'endTimestamp' => strtotime("13.04.2025 19:0:0"),
         'color' => '#02cbb8',
         'title' => '24/7 Gebet',
-        'description' => "Lorem Ipsem\nasdadsfs wergm erpg pwef"
+        'description' => ""
     ]
 ];
 
@@ -31,6 +31,7 @@ foreach($eventMarkingList as $i => &$marking) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($title); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="<?= site_url('style.css'); ?>" rel="stylesheet">
   </head>
 <body>
 
@@ -44,7 +45,7 @@ foreach($eventMarkingList as $i => &$marking) {
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <span class="me-auto"></span>
-                <ul v-if="userLoggedIn" class="navbar-nav mb-2 mb-lg-0">
+                <ul class="navbar-nav mb-2 mb-lg-0">
                     <li class="nav-item"><a class="nav-link disabled">{{ userName }} <span v-if="!userIsAdmin">(<?= lang('Views.no_admin'); ?>)</span></a></li>
                     <li class="nav-item"><a class="nav-link" @click="logout()" href="#"><?= lang('Views.logout'); ?></a></li>
                 </ul>
@@ -67,33 +68,229 @@ foreach($eventMarkingList as $i => &$marking) {
     
     <!-- main content -->
     <div class="container">
-        <div v-if="userIsAdmin">
-            Admin logged in
+        <div class="legend-wrapper">
+            <span class="legend-item" v-for="marking in eventMarkingList" :class="marking.cssClasses">{{ marking.title }}<small class="legend-description">{{ marking.description }}</small></span>
         </div>
-        <div v-else>
-            unauthorised
+        <br>
+
+        <!-- week navigation -->
+        <nav aria-label="Week navigation" class="calendar-wrapper">
+            <ul class="pagination pagination-lg justify-content-center">
+                <li class="page-item">
+                    <a class="page-link" @click="selectPreviousWeek()" aria-label="Previous">
+                        <span>&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item"><a class="page-link" @click="calendar.show = !calendar.show">{{ weekRange() }}</a></li>
+                <li class="page-item">
+                    <a class="page-link" @click="selectNextWeek()" aria-label="Next">
+                        <span>&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+
+
+            <div v-if="calendar.show" class="calendar">
+                <nav class="calendar-navigation">
+                    <button class="page-link" @click="calendar.shownYear--">&laquo;</button>
+                    <button class="page-link" @click="calendarSetPreviousMonth()">&lt;</button>
+                    <button class="page-link today" @click="calendarSetToday()">
+                        <svg viewBox="0 0 16 16" width="20px" class="hover-hide"><circle fill="#9d9d9d" cx="8" cy="8" r="8" /></svg>
+                        <svg viewBox="0 0 16 16" width="20px" class="hover-show"><circle fill="white" cx="8" cy="8" r="8" /></svg>
+                    </button>
+                    <button class="page-link" @click="calendarSetNextMonth()">&gt;</button>
+                    <button class="page-link" @click="calendar.shownYear++">&raquo;</button>
+                </nav>
+                <div class="calendar-body">
+                    <div class="month-header">{{ lang.monthNames[calendar.shownMonth] }} {{ calendar.shownYear }}</div>
+                    <div class="month-body">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th><?= lang('Views.weekdays.short.mon'); ?></th>
+                                    <th><?= lang('Views.weekdays.short.tue'); ?></th>
+                                    <th><?= lang('Views.weekdays.short.wed'); ?></th>
+                                    <th><?= lang('Views.weekdays.short.thu'); ?></th>
+                                    <th><?= lang('Views.weekdays.short.fri'); ?></th>
+                                    <th><?= lang('Views.weekdays.short.sat'); ?></th>
+                                    <th><?= lang('Views.weekdays.short.sun'); ?></th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr v-for="row in 6"
+                                    :class="{ selected: isRowSelected(calendarDayMatrix[row], row) }">
+                                    <td v-for="col in 7">
+                                        <span class="day"
+                                            :class="{ 'previous-month': isDayOfPreviousMonth(calendarDayMatrix[row][col], row), 'next-month': isDayOfNextMonth(calendarDayMatrix[row][col], row) }"
+                                            @click="selectWeek(calendarDayMatrix[row][col], row)">
+                                            {{ calendarDayMatrix[row][col] }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- session table -->
+        <table class="table table-hover session-overview" cellspacing="0">
+            <thead style="position: sticky; top: 0">
+                <tr style="background-color: white;">
+                    <td></td>
+                    <th scope="col" v-for="(day, dayIndex) in configs.daysInAWeek" :col-id="dayIndex">{{ weekDayNameFromTimestamp(weekStartTimestamp + 60*60*24*dayIndex) }} - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*dayIndex) }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="rowTimestamp in rowsTimestampsList">
+                    <th scope="row">{{ timeFromRowTimestamp(rowTimestamp) }}</th>
+                    <td v-for="(_, addDay) in configs.daysInAWeek"
+                        :col-id="addDay"
+                        :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
+                        <span v-if="true === timeBooked(weekStartTimestamp, rowTimestamp, addDay)"
+                            class="booked"
+                            @click="showBookingDetails(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"
+                            :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
+                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
+                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
+                        </span>
+                        <button v-else-if="userId == timeBooked(weekStartTimestamp, rowTimestamp, addDay)"
+                            class="own"
+                            @click="showBookingDetails(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"
+                            :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
+                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
+                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
+                        </button>
+                        <button v-else
+                            class="free"
+                            @click="showSessionBookingModal(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="session-overview-mobile">
+            <div class="day" v-for="(_, addDay) in configs.daysInAWeek" :class="{ active: addDay == calendar.mobileSelectedDay }">
+                <div class="row heading">
+                    <div class="time"></div>
+                    <div class="booking">
+                        <button @click="sessionOverviewMobilePreviousDay()">&lt;</button>
+                        <span>{{ weekDayNameFromTimestamp(weekStartTimestamp + 60*60*24*addDay) }} - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*addDay) }}</span>
+                        <button @click="sessionOverviewMobileNextDay()">&gt;</button>
+                    </div>
+                </div>
+                <div v-for="rowTimestamp in rowsTimestampsList" class="row">
+                    <div class="time">{{ timeFromRowTimestamp(rowTimestamp) }}</div>
+                    <div class="booking" :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
+                        <span v-if="true === timeBooked(weekStartTimestamp, rowTimestamp, addDay)"
+                            class="booked"
+                            @click="showBookingDetails(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"
+                            :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
+                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
+                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
+                        </span>
+                        <button v-else-if="userId == timeBooked(weekStartTimestamp, rowTimestamp, addDay)"
+                            class="own"
+                            @click="showBookingDetails(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"
+                            :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
+                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
+                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
+                        </button>
+                        <button v-else
+                            class="free"
+                            @click="bookSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- login modal -->
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <!-- session details modal -->
+    <div class="modal fade" id="sessionDetailsModal" tabindex="-1" aria-labelledby="sessionDetailsLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="loginModalLabel"><?= lang('Views.login'); ?></h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= lang('Views.close'); ?>"></button>
-            </div>
-            <div class="modal-body">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="sessionDetailsLabel"><?= lang('Admin.session_details.details'); ?></h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= lang('Views.close'); ?>"></button>
+                </div>
                 <form action="#">
-                    <div class="mb-3">
-                        <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.email.label'); ?>:</label>
-                        <input type="email" class="form-control" v-model="loginEmail">
+                    <div class="modal-body">
+                        <div>
+                            <div class="mb-3">
+                                <!-- TODO: load user on demand (and maybe chache?) -->
+                                <label for="userId" class="col-form-label"><?= lang('Admin.session_details.user'); ?>:</label>
+                                <input type="text" class="form-control" name="userId" :value="sessionDetails.userId" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <!-- TODO: load user on demand (and maybe chache?) -->
+                                <label for="time" class="col-form-label"><?= lang('Admin.session_details.time'); ?>:</label>
+                                <input type="text" class="form-control" name="time" :value="sessionDetailsStartTimeFormatted" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label for="title" class="col-form-label"><?= lang('Admin.session_details.title'); ?>:</label>
+                                <input type="text" class="form-control" name="title" v-model="sessionDetails.title">
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" name="title_is_public" v-model="sessionDetails.title_is_public">
+                                <label for="title_is_public" class="form-check-label"><?= lang('Admin.session_details.title_is_public'); ?></label>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="col-form-label"><?= lang('Admin.session_details.description'); ?>:</label>
+                                <textarea class="form-control" name="description" v-model="sessionDetails.description"></textarea>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" name="description_is_public" v-model="sessionDetails.description_is_public">
+                                <label for="description_is_public" class="form-check-label"><?= lang('Admin.session_details.description_is_public'); ?></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" @click="deleteBookedSession(sessionDetails.start_time)"><?= lang('Admin.session_details.delete'); ?></button>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="requestLoginLink()"><?= lang('Views.request_login_link'); ?></button>
-            </div>
+        </div>
+    </div>
+
+    <!-- book new session details modal -->
+    <div class="modal fade" id="newSessionDetailsModal" tabindex="-1" aria-labelledby="newSessionDetailsLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="newSessionDetailsLabel"><?= lang('Admin.session_details.add'); ?></h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= lang('Views.close'); ?>"></button>
+                </div>
+                <form action="#">
+                    <div class="modal-body">
+                        <div>
+                            <div class="mb-3">
+                                <!-- TODO: load user on demand (and maybe chache?) -->
+                                <label for="time" class="col-form-label"><?= lang('Admin.session_details.time'); ?>:</label>
+                                <input type="text" class="form-control" name="time" :value="newSessionDetailsStartTimeFormatted" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label for="title" class="col-form-label"><?= lang('Admin.session_details.title'); ?>:</label>
+                                <input type="text" class="form-control" name="title" v-model="newSessionDetails.title">
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" name="title_is_public" v-model="newSessionDetails.title_is_public">
+                                <label for="title_is_public" class="form-check-label"><?= lang('Admin.session_details.title_is_public'); ?></label>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="col-form-label"><?= lang('Admin.session_details.description'); ?>:</label>
+                                <textarea class="form-control" name="description" v-model="newSessionDetails.description"></textarea>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" name="description_is_public" v-model="newSessionDetails.description_is_public">
+                                <label for="description_is_public" class="form-check-label"><?= lang('Admin.session_details.description_is_public'); ?></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" @click="bookSession()"><?= lang('Admin.session_details.add'); ?></button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -110,14 +307,9 @@ const { createApp, ref } = Vue
 document.app = createApp({
     mounted() {
         this.getLoggedInUser();
-        
-        if (!this.userLoggedIn && "login" == location.pathname.split("/").pop()) {
-            var query_params = this.getQueryParameters();
-            if ("email" in query_params && "token" in query_params)
-            this.login(query_params["email"], query_params["token"])
-        }
-
         this.__startTableHighlighting();
+        this.sessionDetailsModal = new bootstrap.Modal(document.getElementById("sessionDetailsModal"));
+        this.newSessionDetailsModal = new bootstrap.Modal(document.getElementById("newSessionDetailsModal"));
     },
     data() {
         var self = this;
@@ -135,12 +327,13 @@ document.app = createApp({
         });
 
         return {
-            userLoggedIn: false,
-            userIsAdmin: false,
+            sessionDetailsModal: null,
+            sessionDetails: {},
+            newSessionDetailsModal: null,
+            newSessionDetails: {},
             userId: false,
             userName: "",
             baseUrl: "<?php echo base_url(); ?>",
-            loginEmail: "",
             messageList: {},
             __nextMessageId: 1,
             __weekStartTimestamp: null,
@@ -190,6 +383,12 @@ document.app = createApp({
         }
     },
     computed: {
+        sessionDetailsStartTimeFormatted() {
+            return this.dateTimeFromTimestamp(this.sessionDetails.start_time);
+        },
+        newSessionDetailsStartTimeFormatted() {
+            return this.dateTimeFromTimestamp(this.newSessionDetails.start_time);
+        },
         weekStartTimestamp: {
             get() {
                 if (null == this.__weekStartTimestamp) {
@@ -239,8 +438,6 @@ document.app = createApp({
                     });
                 });
             });
-
-
         },
         sessionOverviewMobilePreviousDay() {
             if (0 == this.calendar.mobileSelectedDay) {
@@ -442,11 +639,32 @@ document.app = createApp({
             clearTimeout(this.messageList[id].timeoutId);
             delete this.messageList[id];
         },
-        timeBooked(weekStartTimestamp, rowTimestamp, day) {
+        bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, day) {
+            const booking = this.getBookedTime(weekStartTimestamp, rowTimestamp, day);
+            if (typeof booking.title !== "undefined" && booking.title !== null && booking.title != '') return true;
+            else if (typeof booking.description !== "undefined" && booking.description != null && booking.description != '') return true;
+            else return false;
+        },
+        getBookedTime(weekStartTimestamp, rowTimestamp, day) {
             const startTime = weekStartTimestamp + rowTimestamp + day*24*60*60;
-            if (!(startTime in this.bookedTimestamps)) return false;
-            else if (false == this.bookedTimestamps[startTime].userId) return true;
-            else return this.bookedTimestamps[startTime].userId;
+            if (!(startTime in this.bookedTimestamps)) {
+                return false;
+            }
+            else {
+                return this.bookedTimestamps[startTime];
+            }
+        },
+        timeBooked(weekStartTimestamp, rowTimestamp, day) {
+            const bookedTime = this.getBookedTime(weekStartTimestamp, rowTimestamp, day);
+            if (false == bookedTime) {
+                return false;
+            }
+            else if (false == bookedTime.userId) {
+                return true;
+            }
+            else {
+                return bookedTime.userId;
+            }
         },
         weekRange() {
             return this.dayMonthFromTimestamp(this.weekStartTimestamp) + ' - ' + this.dayMonthFromTimestamp(this.weekEndTimestamp);
@@ -454,6 +672,10 @@ document.app = createApp({
         dayMonthFromTimestamp(timestamp) {
             const date = new Date(timestamp * 1000);
             return String(date.getDate()).padStart(2, '0') + '.' + String(date.getMonth()+1).padStart(2, '0') + '.';
+        },
+        dateTimeFromTimestamp(timestamp) {
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleString();
         },
         timeFromRowTimestamp(rowTimestamp) {
             let date = new Date(0);
@@ -473,47 +695,6 @@ document.app = createApp({
             const newTimestamp = (new Date(d.setDate(diff))).setHours(0, 0, 0, 0)
             return Math.floor(newTimestamp / 1000);
         },
-        getQueryParameters() {
-            var query_vars_raw = window.location.search.substring(1).split("&");
-            var query_vars = {};
-            query_vars_raw.forEach((var_string) => {
-                var var_string_split = var_string.split("=");
-                if (2 != var_string_split.length) return;
-                query_vars[var_string_split[0]] = decodeURIComponent(var_string_split[1]);
-            });
-            return query_vars;
-        },
-        register() {
-            var self = this;
-            axios.post(this.baseUrl + "users", {
-                firstname: this.registrationData.firstname,
-                lastname: this.registrationData.lastname,
-                email: this.registrationData.email,
-            })
-            .then((response) => {
-                if ("data" in response) {
-                    if (typeof response.data !== 'object') self.message(response.data, response.status);
-                    else if ("message" in response.data) self.message(response.data.message, response.status);
-                }
-                else self.message(response.statusText, response.status);
-
-                self.loginEmail = self.registrationData.email;
-                this.requestLoginLink();
-            });
-        },
-        requestLoginLink() {
-            var self = this;
-            axios.post(this.baseUrl + "users/authentication", {
-                email: this.loginEmail,
-            })
-            .then((response) => {
-                if ("data" in response) {
-                    if (typeof response.data !== 'object') self.message(response.data, response.status);
-                    else if ("message" in response.data) self.message(response.data.message, response.status);
-                }
-                else self.message(response.statusText, response.status);
-            });
-        },
         getLoggedInUser() {
             var self = this;
             axios.get(this.baseUrl + "users/authentication/login")
@@ -524,98 +705,72 @@ document.app = createApp({
                 }
                 else {
                     self.userId = parseInt(user_id, 10);
-                    self.userLoggedIn = true;
 
-                    // Check if the user is an admin
-                    axios.get(this.baseUrl + "users/authentication/admin/login")
-                    .then((response) => {
-                        console.log(response.data);
-                        if (self.userId == response.data) {
-                            this.userIsAdmin = true;
-                        }
-                    });
                     // Get users name
                     axios.get(this.baseUrl + "users/" + self.userId)
                     .then((response) => {
                         self.userName = response.data.firstname + " " + response.data.lastname;
                     });
+                }
+            });
 
-                    self.fetchWeekBookings();
-                }
-            });
-        },
-        login(email, token) {
-            var self = this;
-            axios.post(this.baseUrl + "users/authentication/login", {
-                email: email,
-                token: token,
-            })
-            .then((response) => {
-                if ("data" in response) {
-                    if (typeof response.data !== 'object') self.message(response.data, response.status);
-                    else if ("message" in response.data) self.message(response.data.message, response.status);
-                }
-                else self.message(response.statusText, response.status);
-                
-                self.getLoggedInUser();
-            });
+            self.fetchWeekBookings();
         },
         __cleanupUserSession() {
-            this.userLoggedIn = false;
-            this.userId = false;
-            this.userName = "";
-            this.registrationData.firstname = "";
-            this.registrationData.lastname = "";
-            this.registrationData.email = "";
-            this.loginEmail = "";
-            this.bookedTimestamps = {};
-
-            this.fetchWeekBookings();
+            window.location.replace(this.baseUrl);
         },
         logout() {
             var self = this;
             axios.post(this.baseUrl + "users/authentication/logout", {})
             .then((response) => {
                 self.__cleanupUserSession();
-
-                if ("data" in response) {
-                    if (typeof response.data !== 'object') self.message(response.data, response.status);
-                    else if ("message" in response.data) self.message(response.data.message, response.status);
-                }
-                else self.message(response.statusText, response.status);
             });
         },
-        bookSession(timestamp) {
-            if (!this.userLoggedIn) return;
+        bookSession() {
             var self = this;
-            axios.post(this.baseUrl + "sessions/bookings", {
-                "user_id": self.userId,
-                "start_time": timestamp,
-            })
+            var session = JSON.parse(JSON.stringify(self.newSessionDetails));
+            session.user_id = self.userId;
+            session.title_is_public = session.title_is_public == true ? 1 : 0;
+            session.description_is_public = session.description_is_public == true ? 1 : 0;
+            
+            axios.post(this.baseUrl + "sessions/bookings", session)
             .then((response) => {
                 self.fetchWeekBookings();
+                self.newSessionDetailsModal.hide();
             });
         },
         deleteBookedSession(timestamp) {
-            if (!this.userLoggedIn) return;
             var self = this;
             const bookingId = self.bookedTimestamps[timestamp].id;
             axios.delete(this.baseUrl + "sessions/bookings/" + bookingId)
             .then((response) => {
+                this.sessionDetailsModal.hide();
                 self.fetchWeekBookings();
             });
+        },
+        showBookingDetails(timestamp) {
+            this.sessionDetails = this.bookedTimestamps[timestamp];
+            this.sessionDetailsModal.show();
+        },
+        showSessionBookingModal(timestamp) {
+            this.newSessionDetails = {}
+            this.newSessionDetails.start_time = timestamp;
+            this.newSessionDetailsModal.show();
         },
         fetchWeekBookings() {
             var self = this;
             axios.get(this.baseUrl + "sessions/bookings/" + this.weekStartTimestamp + "/" + this.weekEndTimestamp)
             .then((response) => {
                 self.bookedTimestamps = {};
-                for (const sessionBooking of response.data) {
-                    self.bookedTimestamps[sessionBooking.start_time] = {
-                        id: typeof sessionBooking.id != "undefined" ? sessionBooking.id : false,
-                        userId: typeof sessionBooking.user_id != "undefined" ? sessionBooking.user_id : false,
-                        startTime: sessionBooking.start_time,
-                    };
+                for (var sessionBooking of response.data) {
+                    if (sessionBooking.id == "undefined") sessionBooking.id = false;
+                    if (sessionBooking.user_id == "undefined") sessionBooking.user_id = false;
+                    sessionBooking.userId = sessionBooking.user_id;
+                    delete sessionBooking.user_id;
+                    if (sessionBooking.title == "undefined") sessionBooking.title = '';
+                    if (sessionBooking.description == "undefined") sessionBooking.description = '';
+
+                    self.bookedTimestamps[sessionBooking.start_time] = sessionBooking;
                 }
             });
         }
@@ -624,336 +779,7 @@ document.app = createApp({
 </script>
 
 <style>
-    /** General **/
-    a {
-        cursor: pointer;
-    }
-
-    /** Calendar */
-    .calendar-wrapper {
-        position: relative;
-    }
-
-    .calendar {
-        position: absolute;
-        top: calc(100% + 10px);
-        left: 50%;
-        transform: translatex(-50%);
-        z-index: 100;
-        background-color: white;
-        border: 2px solid lightgray;
-    }
-
-    .calendar::before {
-        content: "";
-        border-bottom: 20px solid lightgray;
-        border-left: 20px solid transparent;
-        border-right: 20px solid transparent;
-        position: absolute;
-        left: 50%;
-        top: -20px;
-        transform: translatex(-50%);
-    }
-
-    .calendar-navigation {
-        border-bottom: 2px solid lightgray;
-        padding: 4px;
-    }
-
-    .calendar-navigation > * {
-        display: inline-block;
-        width: 20%;
-        margin: 0;
-        text-align: center;
-        font-size: 20px;
-        padding: 3px 0;
-        border-radius: 5px;
-        color: #9d9d9d;
-    }
-
-    .calendar-navigation .today > svg {
-        overflow: visible;
-    }
-
-    .calendar-navigation .today > .hover-show {
-        display: none;   
-    }
-
-    .calendar-navigation .today:focus > .hover-hide, .calendar-navigation .today:hover > .hover-hide, .calendar-navigation .today:active > .hover-hide {
-        display: none;
-    }
-
-    .calendar-navigation .today:focus > .hover-show, .calendar-navigation .today:hover > .hover-show, .calendar-navigation .today:active > .hover-show {
-        display: initial;
-    }
-
-    .calendar-navigation .today > span {
-        background-color: black;
-        border-radius: 50%;
-        height: 20px;
-        width: 20px;
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translatex(-50%);
-    }
-
-    .calendar-navigation > *:focus, .calendar-navigation > *:hover, .calendar-navigation > *:active {
-        background-color: darkgray;
-        color: white;
-    }
-
-    .month-header {
-        text-align: center;
-        font-weight: bold;
-        font-size: 22px;
-    }
-
-    .month-body thead {
-        border-bottom: 1px solid;
-    }
-
-    .month-body thead th {
-        padding: 0px 5px;
-        font-weight: normal;
-    }
-
-    .month-body tbody {
-        cursor: pointer;
-    }
-
-    .month-body tbody td {
-        text-align: center;
-        width: 40px;
-        height: 40px;
-        font-weight: bold;
-        padding: 0;
-    }
-
-    .month-body tbody .day {
-        width: 36px;
-        height: 36px;
-        display: block;
-        line-height: 32px;
-        padding: 2px;
-    }
-
-    .month-body tbody td .day:focus, .month-body tbody td .day:hover, .month-body tbody td .day:active {
-        background-color: lightgray;
-        border-radius: 50%;
-    }
-
-    .month-body tbody .day.previous-month, .month-body tbody .day.next-month {
-        font-weight: normal;
-    }
-
-    .month-body tbody tr.selected .day {
-        color: blue;
-    }
-
-    /** Notifications **/
-    .notification-wrapper {
-        padding: 10px 20px;
-        min-height: 96px;
-    }
-
-    .notification-wrapper .alert {
-        margin-right: 20px;
-        white-space: pre;
-    }
-
-    .notification-wrapper .text {
-        vertical-align: middle;
-    }
-
-    .notification-wrapper .text + button {
-        vertical-align: middle;
-        margin-left: 15px;
-    }
-
-    /** Session overview **/
-    .session-overview {
-        border-collapse: separate;
-        table-layout: fixed;
-    }
-    .session-overview th, .session-overview td, .session-overview-mobile .heading > .booking, .session-overview-mobile .row > * {
-        border-width: 2px;
-    }
-
-    .session-overview thead td {
-        border-width: 0 2px 2px 0;
-        background-color: transparent;
-        width: 80px;
-    }
-
-    .session-overview th.highlight {
-        background-color: var(--bs-table-hover-bg);
-    }
-
-    .session-overview tbody th, .session-overview-mobile .heading > * {
-        text-align: center;
-        vertical-align: middle;
-    }
-
-    .session-overview td, .session-overview .row > * {
-        padding: 0;
-    }
-
-    .session-overview th {
-        background-color: transparent;
-    }
-
-    .session-overview thead th {
-        width: 175px;
-    }
-
-    .session-overview button, .session-overview span, .session-overview-mobile button, .session-overview-mobile span {
-        background-color: transparent;
-        background-repeat: no-repeat;
-        background-size: auto 100%;
-        background-position: center;
-        border: none;
-        padding: 0;
-        margin: 0;
-        min-width: 100%;
-        min-height: 100%;
-        height: 50px;
-        display: block;
-    }
-
-    .session-overview button.own, .session-overview-mobile button.own {
-        background-color: #d1e7dd;
-        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23198754" class="bi bi-check-lg" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg>');
-    }
-
-    .session-overview button.own:focus, .session-overview button.own:hover, .session-overview button.own:active,
-    .session-overview-mobile button.own:focus, .session-overview-mobile button.own:hover, .session-overview-mobile button.own:active {
-        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23dc3545" class="bi bi-calendar-x-fill" viewBox="0 0 16 16"><path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M6.854 8.146 8 9.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 10l1.147 1.146a.5.5 0 0 1-.708.708L8 10.707l-1.146 1.147a.5.5 0 0 1-.708-.708L7.293 10 6.146 8.854a.5.5 0 1 1 .708-.708"/></svg>');
-        background-size: auto 70%;
-    }
-
-    .session-overview button.free:focus, .session-overview button.free:active, .session-overview button.free:hover,
-    .session-overview-mobile button.free:focus, .session-overview-mobile button.free:active, .session-overview-mobile button.free:hover {
-        background-color: #d1e7dd;
-        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23198754" class="bi bi-calendar-check" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0"/><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/></svg>');
-        background-size: auto 70%;
-    }
-
-    .session-overview span.booked, .session-overview-mobile span.booked {
-        background-color: #fff3cd;
-        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23ffc107" class="bi bi-x" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/></svg>');
-        background-size: auto 140%;
-    }
-
-    .session-overview-mobile {
-        display: none;
-        position: relative;
-        width: calc(100% - 20px);
-        margin: auto;
-    }
-
-    .session-overview-mobile .day {
-        display: none;
-    }
-
-    .session-overview-mobile .time, .session-overview-mobile .booking {
-        border-color: lightgray;
-        border-style: solid;
-        display: inline-block;
-    }
-
-    .session-overview-mobile .time {
-        width: 30%;
-    }
-
-    .session-overview-mobile .row.heading {
-        background-color: white;
-        font-weight: bold;
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .session-overview-mobile .row.heading .time {
-        border-width: 0 2px 2px 0;
-    }
-    
-    .session-overview-mobile .booking {
-        width: 70%;
-        position: relative;
-    }
-
-    .session-overview-mobile .day.active {
-        display: block;
-    }
-
-    .session-overview-mobile .row > * {
-        padding: 0;
-        text-align: center;
-        line-height: 50px;
-    }
-
-    .session-overview-mobile .row.heading > .booking > * {
-        display: inline-block;
-        min-width: 0;
-    }
-
-    .session-overview-mobile .row.heading > .booking > button {
-        width: 30px;
-        height: 30px;
-        min-height: 0;
-        line-height: 26px;
-        color: rgb(13, 110, 253);
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background-color: white;
-    }
-
-    .session-overview-mobile .row.heading > .booking > button:first-child {
-        left: 20px;
-    }
-
-    .session-overview-mobile .row.heading > .booking > button:last-child {
-        right: 20px;
-    }
-
-    .session-overview-mobile .row.heading > .booking > button:focus, .session-overview-mobile .row.heading > .booking > button:hover, .session-overview-mobile .row.heading > .booking > button:active {
-        border: 1px solid rgb(13, 110, 253);
-        border-radius: 4px;
-    }
-
-    .session-overview-mobile .row > .time {
-        font-weight: bold;
-    }
-
-    .session-overview-mobile .row.heading > .booking > span {
-        padding: 0px 20px;
-    }
-
-    @media all and (max-width: 767px) {
-        .session-overview {
-            display: none;
-        }
-
-        .session-overview-mobile {
-            display: block;
-        }
-    }
-
-    /** Event markings */
-    .legend-item {
-        display: inline-block;
-        border: 4px solid;
-        padding: 8px 16px;
-    }
-
-    .legend-description {
-        display: block;
-        font-size: 12px;
-        white-space: pre-line;
-    }
+    /* TODO: change hover background to "show details"-icon for booked and own sessions */
 <?= $additionalStyles ?>
 </style>
 

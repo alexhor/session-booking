@@ -2,6 +2,7 @@
 
 return [
     'no_admin' => 'kein Admin',
+    'access_denied' => 'Zugriff verweigert',
     'logout' => 'Logout',
     'register' => 'Registrieren',
     'login' => 'Login',
