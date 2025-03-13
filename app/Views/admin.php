@@ -46,11 +46,9 @@ foreach($eventMarkingList as $i => &$marking) {
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <span class="me-auto"></span>
                 <ul class="navbar-nav mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link disabled">{{ userName }} <span v-if="!userIsAdmin">(<?= lang('Views.no_admin'); ?>)</span></a></li>
+                    <li class="nav-item"><a class="nav-link disabled">{{ userName }}</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= site_url('admin/users'); ?>"><?= lang('Admin.users'); ?></a></li>
                     <li class="nav-item"><a class="nav-link" @click="logout()" href="#"><?= lang('Views.logout'); ?></a></li>
-                </ul>
-                <ul v-else class="navbar-nav mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="modal" data-bs-target="#loginModal" href="#"><?= lang('Views.login'); ?></a></li>
                 </ul>
             </div>
         </div>

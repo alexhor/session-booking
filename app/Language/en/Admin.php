@@ -2,6 +2,10 @@
 
 return [
     'access_denied' => 'Access denied',
+    'users' => 'Users',
+    'sessions' => 'Sessions',
+    'delete' => 'Delete',
+    'really_delete_user' => 'Do you really want to delete user {user} with email adress "{email}"?',
     'session_details' => [
         'details' => 'Booking Details',
         'user' => 'User',

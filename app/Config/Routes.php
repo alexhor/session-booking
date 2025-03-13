@@ -7,8 +7,9 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 $routes->get('/admin', 'Home::admin');
+$routes->get('/admin/users', 'Home::adminUsers');
 
-// TODO: add admin ui
+// TODO: admins should be able to manage admin group members
 // TODO: add email reminder 24h before a booked session
 
 // TODO: add email confirmation for (un)booking a session

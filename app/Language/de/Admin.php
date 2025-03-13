@@ -2,6 +2,10 @@
 
 return [
     'access_denied' => 'Zugriff verweigert',
+    'users' => 'Benutzer',
+    'sessions' => 'Sessions',
+    'delete' => 'Löschen',
+    'really_delete_user' => 'Willst du wirklich den Benutzer {user} mit der E-Mail Adresse "{email}" löschen?',
     'session_details' => [
         'details' => 'Buchungs Details',
         'user' => 'Benutzer',
