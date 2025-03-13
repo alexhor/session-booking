@@ -8,10 +8,12 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 $routes->get('/admin', 'Home::admin');
 
-// TODO: integrate Codeigniter shield
+// TODO: add admin ui
 // TODO: add email reminder 24h before a booked session
 
 // TODO: add email confirmation for (un)booking a session
+// TODO: add ical as attachment to email with booked session
+// TODO: add login remembering
 // TOOD: validate session length and offset
 
 // TODO: add test for unauthorized response for user self delete
@@ -34,13 +36,6 @@ $email->setMessage($this->view(
 # Some (validation) error occured during email sending or token validation
 $routes->get('magic-link', 'Home::index');
 $routes->get('login', 'Home::index');
-#TODO: show errors in ui
-#->with('errors', $this->validator->getErrors());
-#->with('error', lang('Auth.invalidEmail'));
-#->with('error', lang('Auth.magicLinkDisabled'));
-#->with('error', lang('Auth.magicTokenNotFound'));
-#TODO: repopulate registration form with user data
-#->withInput()
 
 
 # Send token via email and inform user what's happening now

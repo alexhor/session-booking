@@ -1,4 +1,26 @@
 <?php
+function getSessionErrorsJson() {
+    $error_list = [];
+
+    if (session()->has('error')) {
+        array_push($error_list, [
+            'message' => session()->get('error'),
+            'status' => 400
+        ]);
+    }
+
+    if (session()->has('errors')) {
+        foreach (session()->get('errors') as $key => $message) {
+            array_push($error_list, [
+                'message' => $message,
+                'status' => 400
+            ]);
+        }
+    }
+
+    return json_encode($error_list);
+}
+
 $title = 'Buchungen - Gebetshaus Ravensburg';
 $additionalStyles= '';
 
@@ -205,15 +227,15 @@ foreach($eventMarkingList as $i => &$marking) {
                         <div>
                             <div class="mb-3">
                                 <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.firstname.label'); ?>:</label>
-                                <input type="text" class="form-control" name="firstname" v-model="registrationData.firstname">
+                                <input type="text" class="form-control" name="firstname" v-model="registrationData.firstname" required>
                             </div>
                             <div class="mb-3">
                                 <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.lastname.label'); ?>:</label>
-                                <input type="text" class="form-control" name="lastname" v-model="registrationData.lastname">
+                                <input type="text" class="form-control" name="lastname" v-model="registrationData.lastname" required>
                             </div>
                             <div class="mb-3">
                                 <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.email.label'); ?>:</label>
-                                <input type="email" class="form-control" email="email" v-model="registrationData.email">
+                                <input type="email" class="form-control" email="email" v-model="registrationData.email" required>
                             </div>
                         </div>
                     </div>
@@ -241,12 +263,12 @@ foreach($eventMarkingList as $i => &$marking) {
                         <div>
                             <div class="mb-3">
                                 <label for="recipient-name" class="col-form-label"><?= lang('Validation.user.email.label'); ?>:</label>
-                                <input type="email" class="form-control" name="email" v-model="loginEmail">
+                                <input type="text" class="form-control" name="email" v-model="loginEmail" required>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal"><?= lang('Views.request_login_link'); ?></button>
+                        <button type="submit" class="btn btn-primary"><?= lang('Views.request_login_link'); ?></button>
                     </div>
                 </form>
             </div>
@@ -273,6 +295,11 @@ document.app = createApp({
         }
 
         this.__startTableHighlighting();
+
+        const pageLoadErrorMessageList = <?= getSessionErrorsJson(); ?>;
+        pageLoadErrorMessageList.forEach(messageObject => {
+            this.message(messageObject.message, messageObject.status, 0);
+        });
     },
     data() {
         var self = this;
@@ -586,19 +613,24 @@ document.app = createApp({
             const id = this.__nextMessageId;
             this.__nextMessageId++;
 
-            const timeoutId = setTimeout(() => {
-                delete this.messageList[id];
-            }, secondsToLive*1000);
-
             this.messageList[id] = {
                 id: id,
                 status: status,
                 text: text,
-                timeoutId: timeoutId,
             };
+
+            if (0 < secondsToLive) {
+                const timeoutId = setTimeout(() => {
+                    delete this.messageList[id];
+                }, secondsToLive*1000);
+                this.messageList[id].timeoutId = timeoutId;
+            }
         },
         clearMessage(id) {
-            clearTimeout(this.messageList[id].timeoutId);
+            if (typeof this.messageList[id].timeoutId != "undefined") {
+                clearTimeout(this.messageList[id].timeoutId);
+            }
+            
             delete this.messageList[id];
         },
         bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, day) {
@@ -798,7 +830,7 @@ document.app = createApp({
         cursor: pointer;
     }
 
-    .container {
+    div:not(.navbar) > .container {
         padding-bottom: 50px;
     }
 
