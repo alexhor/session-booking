@@ -63,7 +63,7 @@ class AuthGroups extends ShieldAuthGroups
         'users.show'          => 'Access all users details',
         'users.update'          => 'Edit all users details',
         'users.delete'        => 'Delete any user',
-        'users.update-groups'   => 'Edit the groups assigned to a user',
+        'users.groups.update'   => 'Edit the groups assigned to a user',
 
         'session-bookings.show-details'   => 'Access all details of all session bookings',
         'session-bookings.set-details-public' => 'Make details like title and description publicly available',

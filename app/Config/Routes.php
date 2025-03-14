@@ -56,6 +56,9 @@ $routes->get('users/(:num)', 'UserController::show/$1');
 $routes->post('users', 'UserController::create');
 $routes->put('users/(:num)', 'UserController::update/$1');
 $routes->delete('users/(:num)', 'UserController::delete/$1');
+## User group actions
+$routes->put('users/(:num)/groups/(:alpha)', 'UserAuthenticationController::addToGroup/$1/$2');
+$routes->delete('users/(:num)/groups/(:alpha)', 'UserAuthenticationController::removeFromGroup/$1/$2');
 
 # Session booking actions
 $routes->get('sessions/bookings/(:num)', 'SessionBookingController::show/$1');

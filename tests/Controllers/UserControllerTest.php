@@ -105,6 +105,8 @@ class UserControllerTest extends CIUnitTestCase
         $this->assertArrayHasKey('firstname', $response_data);
         $this->assertArrayHasKey('lastname', $response_data);
         $this->assertArrayHasKey('email', $response_data);
+        $this->assertArrayHasKey('groups', $response_data);
+        $this->assertEqualsCanonicalizing(['user'], $response_data['groups']);
 
         $response = $this->actingAs($adminUser)->get('users/772843');
         $response->assertOk();
@@ -113,6 +115,8 @@ class UserControllerTest extends CIUnitTestCase
         $this->assertArrayHasKey('firstname', $response_data);
         $this->assertArrayHasKey('lastname', $response_data);
         $this->assertArrayHasKey('email', $response_data);
+        $this->assertArrayHasKey('groups', $response_data);
+        $this->assertEqualsCanonicalizing(['admin'], $response_data['groups']);
 
         // User logged in
         $user = auth()->getProvider()->findById(946638323423);
@@ -126,6 +130,8 @@ class UserControllerTest extends CIUnitTestCase
         $this->assertArrayHasKey('firstname', $response_data);
         $this->assertArrayHasKey('lastname', $response_data);
         $this->assertArrayHasKey('email', $response_data);
+        $this->assertArrayHasKey('groups', $response_data);
+        $this->assertEqualsCanonicalizing(['user'], $response_data['groups']);
     }
 
     public function testCreateUser(): void
@@ -151,6 +157,8 @@ class UserControllerTest extends CIUnitTestCase
         $this->assertArrayHasKey('firstname', $response_data);
         $this->assertArrayHasKey('lastname', $response_data);
         $this->assertArrayHasKey('email', $response_data);
+        $this->assertArrayHasKey('groups', $response_data);
+        $this->assertEqualsCanonicalizing(['user', 'admin'], $response_data['groups']);
         foreach ($user_data as $key => $_) {
             $this->assertEquals($response_data[$key], $user_data[$key]);
         }
@@ -177,6 +185,8 @@ class UserControllerTest extends CIUnitTestCase
         $this->assertArrayHasKey('firstname', $response_data);
         $this->assertArrayHasKey('lastname', $response_data);
         $this->assertArrayHasKey('email', $response_data);
+        $this->assertArrayHasKey('groups', $response_data);
+        $this->assertEqualsCanonicalizing(['user'], $response_data['groups']);
         foreach ($user_data as $key => $_) {
             $this->assertEquals($response_data[$key], $user_data[$key]);
         }

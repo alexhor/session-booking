@@ -50,68 +50,27 @@ $title = 'Buchungen - Gebetshaus Ravensburg - Admin';
                     <th><?= lang('Validation.user.firstname.label'); ?></th>
                     <th><?= lang('Validation.user.lastname.label'); ?></th>
                     <th><?= lang('Validation.user.email.label'); ?></th>
+                    <th><?= lang('Admin.admin'); ?></th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="user in userList">
+                <tr v-for="user in userList" :id="'user-row-' + user.id">
                     <td>{{ user.id }}</td>
                     <td>{{ user.firstname }}</td>
                     <td>{{ user.lastname }}</td>
                     <td>{{ user.email }}</td>
+                    <td>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_admin" :checked="user.groups.includes('admin')" @input="toggleAdminGroupForUser(user)">
+                        </div>
+                    </td>
                     <td>
                         <button type="button" class="btn btn-danger" @click="promptReallyDeleteUser(user)"><?= lang('Admin.delete'); ?></button>
                     </td>
                 </tr>
             </tbody>
         </table>
-    </div>
-
-    <!-- session details modal -->
-    <div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="userDetailsLabel"><?= lang('Admin.session_details.details'); ?></h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= lang('Views.close'); ?>"></button>
-                </div>
-                <form action="#">
-                    <div class="modal-body">
-                        <div>
-                            <div class="mb-3">
-                                <!-- TODO: load user on demand (and maybe chache?) -->
-                                <label for="userId" class="col-form-label"><?= lang('Admin.session_details.user'); ?>:</label>
-                                <input type="text" class="form-control" name="userId" :value="userDetails.userId" disabled>
-                            </div>
-                            <div class="mb-3">
-                                <!-- TODO: load user on demand (and maybe chache?) -->
-                                <label for="time" class="col-form-label"><?= lang('Admin.session_details.time'); ?>:</label>
-                                <input type="text" class="form-control" name="time" :value="userDetailsStartTimeFormatted" disabled>
-                            </div>
-                            <div class="mb-3">
-                                <label for="title" class="col-form-label"><?= lang('Admin.session_details.title'); ?>:</label>
-                                <input type="text" class="form-control" name="title" v-model="userDetails.title">
-                            </div>
-                            <div class="mb-3 form-check">
-                                <input type="checkbox" class="form-check-input" name="title_is_public" v-model="userDetails.title_is_public">
-                                <label for="title_is_public" class="form-check-label"><?= lang('Admin.session_details.title_is_public'); ?></label>
-                            </div>
-                            <div class="mb-3">
-                                <label for="description" class="col-form-label"><?= lang('Admin.session_details.description'); ?>:</label>
-                                <textarea class="form-control" name="description" v-model="userDetails.description"></textarea>
-                            </div>
-                            <div class="mb-3 form-check">
-                                <input type="checkbox" class="form-check-input" name="description_is_public" v-model="userDetails.description_is_public">
-                                <label for="description_is_public" class="form-check-label"><?= lang('Admin.session_details.description_is_public'); ?></label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" @click="deleteBookedSession(userDetails.start_time)"><?= lang('Admin.session_details.delete'); ?></button>
-                    </div>
-                </form>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -144,7 +103,6 @@ document.app = createApp({
         });
 
         return {
-            userDetails: {},
             userList: [],
             userId: false,
             userName: "",
@@ -215,6 +173,26 @@ document.app = createApp({
             confirmMessage = confirmMessage.replace('{user}', user.firstname + ' ' + user.lastname).replace('{email}', user.email);
             if (confirm(confirmMessage)) {
                 axios.delete(this.baseUrl + "users/" + user.id)
+                .then((response) => {
+                    this.getUserList();
+                });
+            }
+        },
+        toggleAdminGroupForUser(user) {
+            if (this.userId == user.id) {
+                if (!confirm('<?= lang("Admin.really_remove_self_from_admin"); ?>')) {
+                    document.querySelector("#user-row-" + user.id + " input[name=is_admin]").checked = true;
+                    return;
+                }
+            }
+            if (user.groups.includes('admin')) {
+                axios.delete(this.baseUrl + 'users/' + user.id + '/groups/admin')
+                .then((response) => {
+                    this.getUserList();
+                });
+            }
+            else {
+                axios.put(this.baseUrl + 'users/' + user.id + '/groups/admin')
                 .then((response) => {
                     this.getUserList();
                 });

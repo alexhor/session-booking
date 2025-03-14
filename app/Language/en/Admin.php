@@ -6,6 +6,8 @@ return [
     'sessions' => 'Sessions',
     'delete' => 'Delete',
     'really_delete_user' => 'Do you really want to delete user {user} with email adress "{email}"?',
+    'admin' => 'Admin',
+    'really_remove_self_from_admin' => 'Do you really want to remove yourself as an admin?',
     'session_details' => [
         'details' => 'Booking Details',
         'user' => 'User',

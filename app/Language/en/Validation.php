@@ -24,6 +24,10 @@ return [
         'updating_failed' => 'Updating user data failed',
         'deleted' => 'User deleted',
         'deleting_failed' => 'Deleting user failed',
+        'add_to_group' => 'User was added to group {group}',
+        'add_to_group_failed' => 'Adding user to the group {group} failed',
+        'remove_from_group' => 'User was removed from group {group}',
+        'remove_from_group_failed' => 'Removing user from the group {group} failed',
         'id' => [
             'label' => 'User ID',
             'required' => 'No user id given',

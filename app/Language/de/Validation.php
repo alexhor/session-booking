@@ -23,6 +23,10 @@ return [
         'updating_failed' => 'Aktualisierung der Benutzerdaten ist fehlgeschlagen',
         'deleted' => 'Benutzer wurde gelöscht',
         'deleting_failed' => 'Löschen des Benutzers ist fehlgeschlagen',
+        'add_to_group' => 'Benutzer wurde zur Gruppe {group} hinzugefügt',
+        'add_to_group_failed' => 'Benutzer zur Gruppe {group} hinzuzufügen ist fehlgeschlagen',
+        'remove_from_group' => 'Benutzer wurde aus der Gruppe {group} entfernt',
+        'remove_from_group_failed' => 'Benutzer aus der Gruppe {group} zu entfernen ist fehlgeschlagen',
         'id' => [
             'label' => 'Benutzer ID',
             'required' => 'ID des Benutzers fehlt',

@@ -12,6 +12,7 @@ class User extends ShieldUser
     {
         $data = parent::jsonSerialize();
         $data['email'] = $this->email;
+        $data['groups'] = $this->getGroups();
         return $data;
     }
 }
