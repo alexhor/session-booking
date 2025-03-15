@@ -147,20 +147,20 @@ foreach($eventMarkingList as $i => &$marking) {
                     <td v-for="(_, addDay) in configs.daysInAWeek"
                         :col-id="addDay"
                         :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
-                        <span v-if="true === timeBooked(weekStartTimestamp, rowTimestamp, addDay)"
-                            class="booked"
-                            @click="showBookingDetails(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"
-                            :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
-                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
-                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
-                        </span>
-                        <button v-else-if="userId == timeBooked(weekStartTimestamp, rowTimestamp, addDay)"
+                        <button v-if="userId === timeBooked(weekStartTimestamp, rowTimestamp, addDay)"
                             class="own"
                             @click="showBookingDetails(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"
                             :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
                             <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
                             <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
                         </button>
+                        <span v-else-if="false !== timeBooked(weekStartTimestamp, rowTimestamp, addDay)"
+                            class="booked"
+                            @click="showBookingDetails(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"
+                            :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
+                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
+                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
+                        </span>
                         <button v-else
                             class="free"
                             @click="showSessionBookingModal(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
@@ -181,23 +181,23 @@ foreach($eventMarkingList as $i => &$marking) {
                 <div v-for="rowTimestamp in rowsTimestampsList" class="row">
                     <div class="time">{{ timeFromRowTimestamp(rowTimestamp) }}</div>
                     <div class="booking" :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
-                        <span v-if="true === timeBooked(weekStartTimestamp, rowTimestamp, addDay)"
-                            class="booked"
-                            @click="showBookingDetails(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"
-                            :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
-                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
-                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
-                        </span>
-                        <button v-else-if="userId == timeBooked(weekStartTimestamp, rowTimestamp, addDay)"
+                        <button v-if="userId === timeBooked(weekStartTimestamp, rowTimestamp, addDay)"
                             class="own"
                             @click="showBookingDetails(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"
                             :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
                             <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
                             <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
                         </button>
+                        <span v-else-if="false !== timeBooked(weekStartTimestamp, rowTimestamp, addDay)"
+                            class="booked"
+                            @click="showBookingDetails(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"
+                            :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
+                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
+                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
+                        </span>
                         <button v-else
                             class="free"
-                            @click="bookSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
+                            @click="showSessionBookingModal(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
                     </div>
                 </div>
             </div>
@@ -217,8 +217,8 @@ foreach($eventMarkingList as $i => &$marking) {
                         <div>
                             <div class="mb-3">
                                 <!-- TODO: load user on demand (and maybe chache?) -->
-                                <label for="userId" class="col-form-label"><?= lang('Admin.session_details.user'); ?>:</label>
-                                <input type="text" class="form-control" name="userId" :value="sessionDetails.userId" disabled>
+                                <label for="user_id" class="col-form-label"><?= lang('Admin.session_details.user'); ?>:</label>
+                                <input type="text" class="form-control" name="user_id" :value="sessionDetails.user_id" disabled>
                             </div>
                             <div class="mb-3">
                                 <!-- TODO: load user on demand (and maybe chache?) -->
@@ -654,14 +654,14 @@ document.app = createApp({
         },
         timeBooked(weekStartTimestamp, rowTimestamp, day) {
             const bookedTime = this.getBookedTime(weekStartTimestamp, rowTimestamp, day);
-            if (false == bookedTime) {
+            if (false === bookedTime) {
                 return false;
             }
-            else if (false == bookedTime.userId) {
+            else if (false == bookedTime.user_id) {
                 return true;
             }
             else {
-                return bookedTime.userId;
+                return bookedTime.user_id;
             }
         },
         weekRange() {
@@ -762,9 +762,6 @@ document.app = createApp({
                 self.bookedTimestamps = {};
                 for (var sessionBooking of response.data) {
                     if (sessionBooking.id == "undefined") sessionBooking.id = false;
-                    if (sessionBooking.user_id == "undefined") sessionBooking.user_id = false;
-                    sessionBooking.userId = sessionBooking.user_id;
-                    delete sessionBooking.user_id;
                     if (sessionBooking.title == "undefined") sessionBooking.title = '';
                     if (sessionBooking.description == "undefined") sessionBooking.description = '';
 
