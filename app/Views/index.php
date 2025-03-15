@@ -69,6 +69,7 @@ foreach($eventMarkingList as $i => &$marking) {
                 <span class="me-auto"></span>
                 <ul v-if="userLoggedIn" class="navbar-nav mb-2 mb-lg-0">
                     <li class="nav-item"><a class="nav-link disabled">{{ userName }}</a></li>
+                    <li class="nav-item" v-if="userIsAdmin"><a class="nav-link" href="<?= site_url('admin'); ?>"><?= lang('Admin.admin'); ?></a></li>
                     <li class="nav-item"><a class="nav-link" @click="logout()" href="#"><?= lang('Views.logout'); ?></a></li>
                 </ul>
                 <ul v-else class="navbar-nav mb-2 mb-lg-0">
@@ -315,6 +316,7 @@ document.app = createApp({
             userLoggedIn: false,
             userId: null,
             userName: "",
+            userIsAdmin: false,
             baseUrl: "<?php echo base_url(); ?>",
             registrationData: {
                 firstname: "",
@@ -726,6 +728,10 @@ document.app = createApp({
                         self.userName = response.data.firstname + " " + response.data.lastname;
                     });
 
+                    axios.get(this.baseUrl + "users/admin")
+                    .then((response) => {
+                        self.userIsAdmin = response.data;
+                    });
                 }
             });
         },
