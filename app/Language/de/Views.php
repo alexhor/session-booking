@@ -46,4 +46,7 @@ return [
         'november' => 'November',
         'december' => 'Dezember',
     ],
+    'login_link_send_via_email' => 'Ein Login Link wurde per E-Mail verschickt',
+    'check_you_spam_folder' => 'Prüfe auch deinen Spam Ordner, ob die E-Mail dort gelandet ist.',
+    'email_send_only_shortly_valid' => "Wir haben dir gerade eine E-Mail mit einem Login-Link geschickt.\nEr ist nur für {minutes} Minuten gültig.",
 ];
