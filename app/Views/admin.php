@@ -160,6 +160,8 @@ foreach($eventMarkingList as $i => &$marking) {
                             :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
                             <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
                             <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
+                            <div class="user-info" v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).user_id">{{ userList[getBookedTime(weekStartTimestamp, rowTimestamp, addDay).user_id].firstname + " " + userList[getBookedTime(weekStartTimestamp, rowTimestamp, addDay).user_id].lastname }}</div>
+                            <div class="user-info" v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).user_id">{{ userList[getBookedTime(weekStartTimestamp, rowTimestamp, addDay).user_id].email }}</div>
                         </span>
                         <button v-else
                             class="free"
@@ -194,6 +196,8 @@ foreach($eventMarkingList as $i => &$marking) {
                             :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
                             <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
                             <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
+                            <div class="user-info" v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).user_id">{{ userList[getBookedTime(weekStartTimestamp, rowTimestamp, addDay).user_id].firstname + " " + userList[getBookedTime(weekStartTimestamp, rowTimestamp, addDay).user_id].lastname }}</div>
+                            <div class="user-info" v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).user_id">{{ userList[getBookedTime(weekStartTimestamp, rowTimestamp, addDay).user_id].email }}</div>
                         </span>
                         <button v-else
                             class="free"
@@ -216,9 +220,9 @@ foreach($eventMarkingList as $i => &$marking) {
                     <div class="modal-body">
                         <div>
                             <div class="mb-3">
-                                <!-- TODO: load user on demand (and maybe chache?) -->
-                                <label for="user_id" class="col-form-label"><?= lang('Admin.session_details.user'); ?>:</label>
-                                <input type="text" class="form-control" name="user_id" :value="sessionDetails.user_id" disabled>
+                                <label class="col-form-label"><?= lang('Admin.session_details.user'); ?>:</label>
+                                <input v-if="sessionDetails.user_id" type="text" class="form-control" name="user_name" :value="userList[sessionDetails.user_id].firstname + ' ' + userList[sessionDetails.user_id].lastname" disabled>
+                                <input v-if="sessionDetails.user_id" type="text" class="form-control" name="user_email" :value="userList[sessionDetails.user_id].email" disabled>
                             </div>
                             <div class="mb-3">
                                 <!-- TODO: load user on demand (and maybe chache?) -->
@@ -325,6 +329,7 @@ document.app = createApp({
         });
 
         return {
+            userList: {},
             sessionDetailsModal: null,
             sessionDetails: {},
             newSessionDetailsModal: null,
@@ -756,6 +761,14 @@ document.app = createApp({
             this.newSessionDetailsModal.show();
         },
         fetchWeekBookings() {
+            axios.get(this.baseUrl + "users")
+            .then((response) => {
+                this.userList = {};
+                response.data.forEach(user => {
+                    this.userList[user.id] = user;
+                });
+            });
+
             var self = this;
             axios.get(this.baseUrl + "sessions/bookings/" + this.weekStartTimestamp + "/" + this.weekEndTimestamp)
             .then((response) => {
@@ -775,6 +788,10 @@ document.app = createApp({
 
 <style>
     /* TODO: change hover background to "show details"-icon for booked and own sessions */
+    .user-info {
+        overflow: hidden;
+        font-size: 10px;
+    }
 <?= $additionalStyles ?>
 </style>
 
