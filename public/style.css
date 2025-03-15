@@ -7,6 +7,12 @@ div:not(.navbar) > .container {
     padding-bottom: 50px;
 }
 
+@media all and (max-width: 1919px) {
+    #app > .container {
+        margin: 0px 20px;
+    }
+}
+
 /** Calendar */
 .calendar-wrapper {
     position: relative;
@@ -318,6 +324,17 @@ div:not(.navbar) > .container {
 
 .session-overview-mobile .row.heading > .booking > span {
     padding: 0px 20px;
+}
+
+@media all and (max-width: 1550px) {
+    .session-overview thead td, .session-overview thead th,
+    .session-overview tbody td, .session-overview tbody th {
+        width: 120px;
+    }
+
+    .session-overview tbody td, .session-overview tbody th {
+        height: 100px;
+    }
 }
 
 @media all and (max-width: 767px) {
