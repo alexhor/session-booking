@@ -9,12 +9,10 @@ $routes->get('/', 'Home::index');
 $routes->get('/admin', 'Home::admin');
 $routes->get('/admin/users', 'Home::adminUsers');
 
-// TODO: admins should be able to manage admin group members
 // TODO: add email reminder 24h before a booked session
 
 // TODO: add email confirmation for (un)booking a session
 // TODO: add ical as attachment to email with booked session
-// TODO: add login remembering
 // TOOD: validate session length and offset
 
 // TODO: add test for unauthorized response for user self delete
@@ -42,7 +40,7 @@ $routes->get('login', 'Home::index');
 # Send token via email and inform user what's happening now
 $routes->post('users/authentication', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginAction');
 # Link in the email points here
-$routes->get('verify-magic-link', '\CodeIgniter\Shield\Controllers\MagicLinkController::verify');
+$routes->get('verify-magic-link', 'UserAuthenticationController::verify');
 # Logout user
 $routes->get('users/authentication/logout', '\CodeIgniter\Shield\Controllers\LoginController::logoutAction');
 # Get data of logged in user

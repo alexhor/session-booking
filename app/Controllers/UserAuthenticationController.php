@@ -3,6 +3,9 @@
 namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
+use CodeIgniter\HTTP\RedirectResponse;
+use CodeIgniter\Shield\Controllers\MagicLinkController;
+use App\Authenticators\Session;
 
 class UserAuthenticationController extends ResourceController
 {
@@ -46,5 +49,21 @@ class UserAuthenticationController extends ResourceController
             return $this->fail(lang('Validation.user.remove_from_group_failed', [$group]));
         }
         return $this->failNotFound(lang('Validation.user.id.not_found'));
+    }
+
+    /**
+     * Handles the GET request from the email
+     */
+    public function verify() {
+        $magicLinkController = new MagicLinkController();
+        $magicLinkController->initController($this->request, $this->response, $this->logger);
+        $response = $magicLinkController->verify();
+        // Set remember me
+        if (auth()->user()) {
+            $sessionAuthenticator = new Session(auth()->getProvider());
+            $sessionAuthenticator->issueRememberMeToken();
+            $response = $response->withCookies();
+        }
+        return $response;
     }
 }
