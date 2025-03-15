@@ -171,7 +171,7 @@ foreach($eventMarkingList as $i => &$marking) {
                 <tr v-for="rowTimestamp in rowsTimestampsList">
                     <th scope="row">{{ timeFromRowTimestamp(rowTimestamp) }}</th>
                     <td v-for="(_, addDay) in configs.daysInAWeek" :col-id="addDay" :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
-                        <button v-if="userId === timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="own" @click="deleteBookedSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
+                        <button v-if="userId !== null && userId === timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="own" @click="deleteBookedSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
                             <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
                             <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
                         </button>
@@ -198,7 +198,7 @@ foreach($eventMarkingList as $i => &$marking) {
                 <div v-for="rowTimestamp in rowsTimestampsList" class="row">
                     <div class="time">{{ timeFromRowTimestamp(rowTimestamp) }}</div>
                     <div class="booking" :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
-                        <button v-if="userId === timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="own" @click="deleteBookedSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
+                        <button v-if="userId !== null && userId === timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="own" @click="deleteBookedSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
                             <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
                             <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
                         </button>
