@@ -18,18 +18,6 @@ $routes->get('/admin/users', 'Home::adminUsers');
 // TODO: add test for unauthorized response for user self delete
 
 
-/**
-$email = emailer(['mailType' => 'html'])
-    ->setFrom(setting('Email.fromEmail'), setting('Email.fromName') ?? '');
-$email->setTo($user->email);
-$email->setSubject(lang('Auth.magicLinkSubject'));
-$email->setMessage($this->view(
-    setting('Auth.views')['magic-link-email'],
-    ['token' => $token, 'ipAddress' => $ipAddress, 'userAgent' => $userAgent, 'date' => $date],
-    ['debug' => false]
-));
- */
-
 
 
 # Some (validation) error occured during email sending or token validation
