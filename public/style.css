@@ -169,7 +169,7 @@ div:not(.navbar) > .container {
     background-color: var(--bs-table-hover-bg);
 }
 
-.session-overview tbody th, .session-overview-mobile .heading > * {
+.session-overview tbody th, .session-overview tbody td, .session-overview-mobile .heading > * {
     text-align: center;
     vertical-align: middle;
 }
@@ -280,7 +280,6 @@ div:not(.navbar) > .container {
 .session-overview-mobile .row > * {
     padding: 0;
     text-align: center;
-    line-height: 50px;
 }
 
 .session-overview-mobile .row.heading > .booking > * {

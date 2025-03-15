@@ -170,15 +170,15 @@ foreach($eventMarkingList as $i => &$marking) {
                 <tr v-for="rowTimestamp in rowsTimestampsList">
                     <th scope="row">{{ timeFromRowTimestamp(rowTimestamp) }}</th>
                     <td v-for="(_, addDay) in configs.daysInAWeek" :col-id="addDay" :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
-                        <span v-if="true === timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="booked" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
-                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
-                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
-                        </span>
-                        <span v-else-if="false == userId" class="free" data-bs-toggle="modal" data-bs-target="#registrationModal"></span>
-                        <button v-else-if="userId == timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="own" @click="deleteBookedSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
+                        <button v-if="userId === timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="own" @click="deleteBookedSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
                             <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
                             <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
                         </button>
+                        <span v-else-if="false !== timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="booked" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
+                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
+                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
+                        </span>
+                        <span v-else-if="null == userId" class="free" data-bs-toggle="modal" data-bs-target="#registrationModal"></span>
                         <button v-else class="free" @click="bookSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
                     </td>
                 </tr>
@@ -197,15 +197,15 @@ foreach($eventMarkingList as $i => &$marking) {
                 <div v-for="rowTimestamp in rowsTimestampsList" class="row">
                     <div class="time">{{ timeFromRowTimestamp(rowTimestamp) }}</div>
                     <div class="booking" :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
-                    <span v-if="true === timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="booked" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
-                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
-                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
-                        </span>
-                        <span v-else-if="false == userId" class="free" data-bs-toggle="modal" data-bs-target="#registrationModal"></span>
-                        <button v-else-if="userId == timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="own" @click="deleteBookedSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
+                        <button v-if="userId === timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="own" @click="deleteBookedSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
                             <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
                             <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
                         </button>
+                        <span v-else-if="false !== timeBooked(weekStartTimestamp, rowTimestamp, addDay)" class="booked" :class="{ no_background_image: bookedTimeHasTitleOrDescription(weekStartTimestamp, rowTimestamp, addDay) }">
+                            <b v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).title }}</b><br>
+                            <small v-if="getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description">{{ getBookedTime(weekStartTimestamp, rowTimestamp, addDay).description }}</small>
+                        </span>
+                        <span v-else-if="null == userId" class="free" data-bs-toggle="modal" data-bs-target="#registrationModal"></span>
                         <button v-else class="free" @click="bookSession(weekStartTimestamp + rowTimestamp + addDay*24*60*60)"></button>
                     </div>
                 </div>
@@ -278,8 +278,8 @@ foreach($eventMarkingList as $i => &$marking) {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
 <script type="module">
 
 
@@ -288,13 +288,7 @@ const { createApp, ref } = Vue
 document.app = createApp({
     mounted() {
         this.getLoggedInUser();
-        
-        if (!this.userLoggedIn && "login" == location.pathname.split("/").pop()) {
-            var query_params = this.getQueryParameters();
-            if ("email" in query_params && "token" in query_params)
-            this.login(query_params["email"], query_params["token"])
-        }
-
+        this.fetchWeekBookings();
         this.__startTableHighlighting();
 
         const pageLoadErrorMessageList = <?= getSessionErrorsJson(); ?>;
@@ -308,7 +302,7 @@ document.app = createApp({
             return response;
         }, function (e) {
             if (401 == e.status) {
-                self.__cleanupUserSession();
+                self.logout();
             }
             else {
                 self.message(Object.values(e.response.data.messages).join("\n"), e.response.data.status);
@@ -319,7 +313,7 @@ document.app = createApp({
 
         return {
             userLoggedIn: false,
-            userId: false,
+            userId: null,
             userName: "",
             baseUrl: "<?php echo base_url(); ?>",
             registrationData: {
@@ -654,11 +648,11 @@ document.app = createApp({
             if (false == bookedTime) {
                 return false;
             }
-            else if (false == bookedTime.userId) {
-                return true;
+            else if (bookedTime.user_id === false) {
+                return null;
             }
             else {
-                return bookedTime.userId;
+                return bookedTime.user_id;
             }
         },
         weekRange() {
@@ -723,10 +717,7 @@ document.app = createApp({
             axios.get(this.baseUrl + "users/authentication/login")
             .then((response) => {
                 var user_id = response.data;
-                if (!user_id) {
-                    self.__cleanupUserSession();
-                }
-                else {
+                if (user_id) {
                     self.userId = parseInt(user_id, 10);
                     self.userLoggedIn = true;
 
@@ -735,50 +726,11 @@ document.app = createApp({
                         self.userName = response.data.firstname + " " + response.data.lastname;
                     });
 
-                    self.fetchWeekBookings();
                 }
             });
-        },
-        login(email, token) {
-            var self = this;
-            axios.post(this.baseUrl + "users/authentication/login", {
-                email: email,
-                token: token,
-            })
-            .then((response) => {
-                if ("data" in response) {
-                    if (typeof response.data !== 'object') self.message(response.data, response.status);
-                    else if ("message" in response.data) self.message(response.data.message, response.status);
-                }
-                else self.message(response.statusText, response.status);
-                
-                self.getLoggedInUser();
-            });
-        },
-        __cleanupUserSession() {
-            this.userLoggedIn = false;
-            this.userId = false;
-            this.userName = "";
-            this.registrationData.firstname = "";
-            this.registrationData.lastname = "";
-            this.registrationData.email = "";
-            this.loginEmail = "";
-            this.bookedTimestamps = {};
-
-            this.fetchWeekBookings();
         },
         logout() {
-            var self = this;
-            axios.post(this.baseUrl + "users/authentication/logout", {})
-            .then((response) => {
-                self.__cleanupUserSession();
-
-                if ("data" in response) {
-                    if (typeof response.data !== 'object') self.message(response.data, response.status);
-                    else if ("message" in response.data) self.message(response.data.message, response.status);
-                }
-                else self.message(response.statusText, response.status);
-            });
+            window.location.replace(this.baseUrl + "users/authentication/logout");
         },
         bookSession(timestamp) {
             if (!this.userLoggedIn) return;
@@ -806,12 +758,10 @@ document.app = createApp({
             .then((response) => {
                 self.bookedTimestamps = {};
                 for (var sessionBooking of response.data) {
-                    if (sessionBooking.id == "undefined") sessionBooking.id = false;
-                    if (sessionBooking.user_id == "undefined") sessionBooking.user_id = false;
-                    sessionBooking.userId = sessionBooking.user_id;
-                    delete sessionBooking.user_id;
-                    if (sessionBooking.title == "undefined") sessionBooking.title = '';
-                    if (sessionBooking.description == "undefined") sessionBooking.description = '';
+                    if (typeof sessionBooking.id == "undefined") sessionBooking.id = false;
+                    if (typeof sessionBooking.user_id == "undefined") sessionBooking.user_id = false;
+                    if (typeof sessionBooking.title == "undefined") sessionBooking.title = '';
+                    if (typeof sessionBooking.description == "undefined") sessionBooking.description = '';
 
                     self.bookedTimestamps[sessionBooking.start_time] = sessionBooking;
                 }

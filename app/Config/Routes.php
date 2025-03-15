@@ -44,7 +44,7 @@ $routes->post('users/authentication', '\CodeIgniter\Shield\Controllers\MagicLink
 # Link in the email points here
 $routes->get('verify-magic-link', '\CodeIgniter\Shield\Controllers\MagicLinkController::verify');
 # Logout user
-$routes->post('users/authentication/logout', 'UserAuthenticationController::logoutAction');
+$routes->get('users/authentication/logout', '\CodeIgniter\Shield\Controllers\LoginController::logoutAction');
 # Get data of logged in user
 $routes->get('users/authentication/login', 'UserAuthenticationController::get_logged_in_user');
 # Check if the logged in user is an admin
