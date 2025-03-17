@@ -8,6 +8,45 @@ class App extends BaseConfig
 {
     /**
      * --------------------------------------------------------------------------
+     * Basic value type configurations allowed to change through API
+     * --------------------------------------------------------------------------
+     * 
+     * Keys are configuration keys.
+     * Values can be any of the following
+     *   - value type
+     *   - an array of valid values
+     *   - 'email'
+     *   - 'password'
+     *   - a callable that returns any of the above mentioned options
+     */
+    public array $apiAllowedSettingKeys = [
+        'App.baseURL' => \string::class,
+        'App.defaultLocale' => ['de', 'en'],
+        'App.appTimezone' => [\DateTimeZone::class, 'listIdentifiers'],
+        'Email.fromEmail' => 'email',
+        'Email.fromName' => \string::class,
+        'Email.protocol' => ['mail', 'sendmail', 'smtp'],
+        'Email.SMTPHost' => \string::class,
+        'Email.SMTPUser' => \string::class,
+        'Email.SMTPPass' => 'password',
+        'Email.SMTPPort' => \integer::class,
+        'Email.SMTPTimeout' => \integer::class,
+        'Email.SMTPCrypto' => ['', 'tls', 'ssl'],
+    ];
+    
+    /**
+     * --------------------------------------------------------------------------
+     * Configurations allowed to be fetched by anyone through API
+     * --------------------------------------------------------------------------
+     */
+    public array $apiPublicSettingKeys = [
+        'App.baseURL',
+        'App.defaultLocale',
+        'App.appTimezone',
+    ];
+
+    /**
+     * --------------------------------------------------------------------------
      * Base Site URL
      * --------------------------------------------------------------------------
      *

@@ -1,5 +1,23 @@
 <?php
 $title = 'Buchungen - Gebetshaus Ravensburg - Admin';
+
+function getSettingsList() {
+    $settingsList = [];
+
+    foreach (service('settings')->get('App.apiAllowedSettingKeys') as $settingKey => $validation) {
+        if (is_callable($validation)) $validation = $validation();
+        $value = service('settings')->get($settingKey);
+        $setting = [
+            'key' => $settingKey,
+            'origValue' => $value,
+            'value' => $value,
+            'validation' => $validation,
+        ];
+        $settingsList[$settingKey] = $setting;
+    }
+
+    return json_encode($settingsList);
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -25,7 +43,7 @@ $title = 'Buchungen - Gebetshaus Ravensburg - Admin';
                 <ul class="navbar-nav mb-2 mb-lg-0">
                     <li class="nav-item"><a class="nav-link disabled">{{ userName }}</span></a></li>
                     <li class="nav-item"><a class="nav-link" href="<?= site_url('admin'); ?>"><?= lang('Admin.sessions'); ?></a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= site_url('admin/settings'); ?>"><?= lang('Admin.settings'); ?></a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= site_url('admin/users'); ?>"><?= lang('Admin.users'); ?></a></li>
                     <li class="nav-item"><a class="nav-link" @click="logout()" href="#"><?= lang('Views.logout'); ?></a></li>
                 </ul>
             </div>
@@ -47,27 +65,24 @@ $title = 'Buchungen - Gebetshaus Ravensburg - Admin';
         <table class="table table-hover table-striped">
             <thead>
                 <tr>
-                    <th><?= lang('Validation.user.id.label'); ?></th>
-                    <th><?= lang('Validation.user.firstname.label'); ?></th>
-                    <th><?= lang('Validation.user.lastname.label'); ?></th>
-                    <th><?= lang('Validation.user.email.label'); ?></th>
-                    <th><?= lang('Admin.admin'); ?></th>
-                    <th></th>
+                    <th style="width: 300px"><?= lang('Admin.setting'); ?></th>
+                    <th><?= lang('Admin.value'); ?></th>
+                    <th style="width: 300px"></th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="user in userList" :id="'user-row-' + user.id">
-                    <td>{{ user.id }}</td>
-                    <td>{{ user.firstname }}</td>
-                    <td>{{ user.lastname }}</td>
-                    <td>{{ user.email }}</td>
+                <tr v-for="setting in settingsList">
+                    <td>{{ setting.key }}</td>
                     <td>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="is_admin" :checked="user.groups.includes('admin')" @input="toggleAdminGroupForUser(user)">
-                        </div>
+                        <input v-if="typeof setting.validation !== 'object'" v-model="setting.value">
+                        <select v-else v-model="setting.value">
+                            <option v-for="option in setting.validation" :selected="option == setting.origValue">{{ option }}</option>
+                        </select>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-danger" @click="promptReallyDeleteUser(user)"><?= lang('Admin.delete'); ?></button>
+                        <button v-if="setting.value != setting.origValue" type="button" class="btn btn-success" @click="saveSetting(setting)"><?= lang('Admin.save'); ?></button>
+                        <button v-if="setting.value != setting.origValue" type="button" class="btn btn-warning" @click="setting.value = setting.origValue"><?= lang('Admin.discard'); ?></button>
+                        <button type="button" class="btn btn-danger" @click="clearSetting(setting)"><?= lang('Admin.reset'); ?></button>
                     </td>
                 </tr>
             </tbody>
@@ -86,7 +101,7 @@ const { createApp, ref } = Vue
 document.app = createApp({
     mounted() {
         this.getLoggedInUser();
-        this.getUserList();
+        this.getsettingsList();
     },
     data() {
         var self = this;
@@ -104,7 +119,7 @@ document.app = createApp({
         });
 
         return {
-            userList: [],
+            settingsList: <?= getSettingsList(); ?>,
             userId: false,
             userName: "",
             baseUrl: "<?php echo base_url(); ?>",
@@ -134,7 +149,7 @@ document.app = createApp({
             clearTimeout(this.messageList[id].timeoutId);
             delete this.messageList[id];
         },
-        getUserList() {
+        getsettingsList() {
             axios.get(this.baseUrl + "users")
             .then((response) => {
                 this.userList = response.data;
@@ -169,35 +184,30 @@ document.app = createApp({
                 self.__cleanupUserSession();
             });
         },
-        promptReallyDeleteUser(user) {
-            var confirmMessage = '<?= lang("Admin.really_delete_user"); ?>';
-            confirmMessage = confirmMessage.replace('{user}', user.firstname + ' ' + user.lastname).replace('{email}', user.email);
+        clearSetting(setting) {
+            var confirmMessage = '<?= lang("Admin.really_clear_setting"); ?>';
+            confirmMessage = confirmMessage.replace('{setting}', setting.key);
             if (confirm(confirmMessage)) {
-                axios.delete(this.baseUrl + "users/" + user.id)
+                console.log(setting.key);
+                axios.delete(this.baseUrl + "settings/" + setting.key)
                 .then((response) => {
-                    this.getUserList();
+                    this.updateConfigValue(setting);
                 });
             }
         },
-        toggleAdminGroupForUser(user) {
-            if (this.userId == user.id) {
-                if (!confirm('<?= lang("Admin.really_remove_self_from_admin"); ?>')) {
-                    document.querySelector("#user-row-" + user.id + " input[name=is_admin]").checked = true;
-                    return;
-                }
-            }
-            if (user.groups.includes('admin')) {
-                axios.delete(this.baseUrl + 'users/' + user.id + '/groups/admin')
-                .then((response) => {
-                    this.getUserList();
-                });
-            }
-            else {
-                axios.put(this.baseUrl + 'users/' + user.id + '/groups/admin')
-                .then((response) => {
-                    this.getUserList();
-                });
-            }
+        saveSetting(setting) {
+            console.log(setting.value);
+            axios.put(this.baseUrl + 'settings/' + setting.key, { 'value': setting.value })
+            .then((response) => {
+                this.updateConfigValue(setting);
+            });
+        },
+        updateConfigValue(setting) {
+            axios.get(this.baseUrl + 'settings/' + setting.key)
+            .then((response) => {
+                this.settingsList[setting.key].value = response.data.value;
+                this.settingsList[setting.key].origValue = response.data.value;
+            });
         },
     },
 }).mount('#app')

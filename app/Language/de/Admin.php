@@ -19,4 +19,11 @@ return [
         'add' => 'Buchung Hinzufügen',
         'delete' => 'Buchung Löschen',
     ],
+    'settings' => 'Einstellungen',
+    'setting' => 'Einstellung',
+    'value' => 'Wert',
+    'really_clear_setting' => 'Willst du wirklich "{setting}" auf den Standard zurücksetzen?',
+    'save' => 'Speichern',
+    'reset' => 'Zurücksetzen',
+    'discard' => 'Verwerfen',
 ];

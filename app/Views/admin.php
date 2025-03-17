@@ -48,6 +48,7 @@ foreach($eventMarkingList as $i => &$marking) {
                 <ul class="navbar-nav mb-2 mb-lg-0">
                     <li class="nav-item"><a class="nav-link disabled">{{ userName }}</span></a></li>
                     <li class="nav-item"><a class="nav-link" href="<?= site_url('admin/users'); ?>"><?= lang('Admin.users'); ?></a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= site_url('admin/settings'); ?>"><?= lang('Admin.settings'); ?></a></li>
                     <li class="nav-item"><a class="nav-link" @click="logout()" href="#"><?= lang('Views.logout'); ?></a></li>
                 </ul>
             </div>

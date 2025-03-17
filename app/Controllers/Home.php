@@ -17,6 +17,12 @@ class Home extends BaseController
         else return view('admin-users');
     }
 
+    public function adminSettings(): RedirectResponse|string
+    {
+        if (!auth()->user() || !auth()->user()->inGroup('admin')) return redirect()->to('/')->with('error', lang('Admin.access_denied'));
+        else return view('admin-settings');
+    }
+
     public function admin(): RedirectResponse|string
     {
         if (!auth()->user() || !auth()->user()->inGroup('admin')) return redirect()->to('/')->with('error', lang('Admin.access_denied'));

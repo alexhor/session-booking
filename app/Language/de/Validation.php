@@ -63,4 +63,6 @@ return [
             'too_may_requests' => 'Token wurden zu oft angefragt. Bitte in einer Minute erneut versuchen',
         ],
     ],
+    'setting_invalid_value' => 'Ein ungültiger Wert wurde für die Einstellung übergeben',
+    'setting_saving_failed' => 'Speichern der Einstellung ist fehlgeschlagen',
 ];

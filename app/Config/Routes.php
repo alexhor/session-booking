@@ -8,6 +8,7 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 $routes->get('/admin', 'Home::admin');
 $routes->get('/admin/users', 'Home::adminUsers');
+$routes->get('/admin/settings', 'Home::adminSettings');
 
 // TODO: add email reminder 24h before a booked session
 
@@ -51,3 +52,8 @@ $routes->get('sessions/bookings/(:num)', 'SessionBookingController::show/$1');
 $routes->get('sessions/bookings/(:num)/(:num)', 'SessionBookingController::get_by_range/$1/$2');
 $routes->delete('sessions/bookings/(:num)', 'SessionBookingController::delete/$1');
 $routes->post('sessions/bookings', 'SessionBookingController::create');
+
+# Settings
+$routes->get('settings/(:segment)', 'SettingController::get/$1');
+$routes->put('settings/(:segment)', 'SettingController::set/$1');
+$routes->delete('settings/(:segment)', 'SettingController::delete/$1');

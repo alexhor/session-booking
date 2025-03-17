@@ -19,4 +19,11 @@ return [
         'add' => 'Add Booking',
         'delete' => 'Delete Booking',
     ],
+    'settings' => 'Settings',
+    'setting' => 'Setting',
+    'value' => 'Value',
+    'really_clear_setting' => 'Do you really want to reset "{setting}" to default?',
+    'save' => 'Save',
+    'reset' => 'Reset',
+    'discard' => 'Discard',
 ];

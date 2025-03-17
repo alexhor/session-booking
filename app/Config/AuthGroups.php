@@ -70,6 +70,10 @@ class AuthGroups extends ShieldAuthGroups
         'session-bookings.create'   => 'Create a new session booking',
         'session-bookings.update'   => 'Edit all existing session bookings',
         'session-bookings.delete'   => 'Delete any session booking',
+
+        'settings.show' => 'Read non public website settings',
+        'settings.update' => 'Update website settings',
+        'settings.delete' => 'Delete website settings',
     ];
 
     /**
@@ -84,6 +88,7 @@ class AuthGroups extends ShieldAuthGroups
         'admin' => [
             'users.*',
             'session-bookings.*',
+            'settings.*',
         ],
         'user' => [
             'session-bookings.create'

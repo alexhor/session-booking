@@ -64,4 +64,6 @@ return [
             'too_may_requests' => 'Token was requested too often. Please try again in one minute',
         ],
     ],
+    'setting_invalid_value' => 'An invalid value has been given for the setting',
+    'setting_saving_failed' => 'Saving the setting failed',
 ];
