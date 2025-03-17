@@ -125,4 +125,162 @@ class UserAuthenticationControllerTest extends CIUnitTestCase
         $user = auth()->getProvider()->findById($user->id);
         $this->assertEmpty($user->getGroups());
     }
+
+    public function testVerifyMagicLink(): void
+    {
+        Time::setTestNow(Time::now());
+        $token = null;
+        $events_triggered = [];
+        Events::on('email', function($archive) use (&$events_triggered, &$token) {
+            $events_triggered[] = 'email';
+
+            preg_match('#/verify-magic-link\?token=([^"]+)#', $archive['body'], $matches);
+            $token = urldecode($matches[1]);
+        });
+        Events::on('magicLogin', function() use (&$events_triggered) { $events_triggered[] = 'magicLogin'; });
+        Events::on('failedLogin', function($credentials) use (&$events_triggered) { $events_triggered[] = 'failedLogin'; });
+
+        /** User normal login **/
+        $events_triggered = [];
+        $user = auth()->getProvider()->findById(2299488734);
+        $response = $this->post('users/authentication', [ 'email' => $user->email ]);
+        $response->assertOk();
+        $this->assertEventTriggered('email');
+        $this->assertNotNull($token);
+        // First login successful
+        $events_triggered = [];
+        $response = $this->get('verify-magic-link', ['token' => $token]);
+        $response->assertOk();
+        $response->assertRedirect();
+        $response->assertEquals(site_url('/'), $response->getRedirectUrl());
+        $this->assertContains('magicLogin', $events_triggered);
+        $this->assertNotContains('failedLogin', $events_triggered);
+        // Second login fails
+        $this->clearAuth();
+        $events_triggered = [];
+        $response = $this->get('verify-magic-link', ['token' => $token]);
+        $response->assertOk();
+        $response->assertRedirectTo('magic-link');
+        $this->assertNotContains('magicLogin', $events_triggered);
+        $this->assertContains('failedLogin', $events_triggered);
+
+        /** User just expired token **/
+        $this->clearAuth();
+        $events_triggered = [];
+        $response = $this->post('users/authentication', [ 'email' => $user->email ]);
+        $response->assertOk();
+        $this->assertEventTriggered('email');
+        $this->assertNotNull($token);
+        // Expire token
+        Time::setTestNow(Time::now()->addSeconds(setting('Auth.magicLinkLifetime')));
+        $events_triggered = [];
+        $response = $this->get('verify-magic-link', ['token' => $token]);
+        $response->assertOk();
+        $response->assertRedirectTo('magic-link');
+        $this->assertNotContains('magicLogin', $events_triggered);
+        $this->assertContains('failedLogin', $events_triggered);
+
+        /** User very expired token **/
+        $this->clearAuth();
+        $events_triggered = [];
+        $response = $this->post('users/authentication', [ 'email' => $user->email ]);
+        $response->assertOk();
+        $this->assertEventTriggered('email');
+        $this->assertNotNull($token);
+        // Expire token
+        Time::setTestNow(Time::now()->addSeconds(setting('Auth.magicLinkLifetime') + DAY));
+        $events_triggered = [];
+        $response = $this->get('verify-magic-link', ['token' => $token]);
+        $response->assertOk();
+        $response->assertRedirectTo('magic-link');
+        $this->assertNotContains('magicLogin', $events_triggered);
+        $this->assertContains('failedLogin', $events_triggered);
+
+        /** User just not expired token **/
+        $this->clearAuth();
+        $events_triggered = [];
+        $response = $this->post('users/authentication', [ 'email' => $user->email ]);
+        $response->assertOk();
+        $this->assertEventTriggered('email');
+        $this->assertNotNull($token);
+        // Just not expired token
+        Time::setTestNow(Time::now()->addSeconds(setting('Auth.magicLinkLifetime')-1));
+        $events_triggered = [];
+        $response = $this->get('verify-magic-link', ['token' => $token]);
+        $response->assertOk();
+        $response->assertRedirect();
+        $response->assertEquals(site_url('/'), $response->getRedirectUrl());
+        $this->assertContains('magicLogin', $events_triggered);
+        $this->assertNotContains('failedLogin', $events_triggered);
+    }
+
+    public function testVerifyInvalidMagicLink(): void
+    {
+        // Create token
+        $user = auth()->getProvider()->findById(2299488734);
+        $response = $this->post('users/authentication', [ 'email' => $user->email ]);
+        $response->assertOk();
+
+        $events_triggered = [];
+        Events::on('magicLogin', function() use (&$events_triggered) { $events_triggered[] = 'magicLogin'; });
+        Events::on('failedLogin', function($credentials) use (&$events_triggered) { $events_triggered[] = 'failedLogin'; });
+        
+        // Invalid token
+        $response = $this->get('verify-magic-link', ['token' => 'invalid']);
+        $response->assertOk();
+        $response->assertRedirectTo('magic-link');
+        $this->assertNotContains('magicLogin', $events_triggered);
+        $this->assertContains('failedLogin', $events_triggered);
+    }
+
+    public function testLoginWithUserAlreadyLoggedIn() 
+    {
+        $token = null;
+        
+        $events_triggered = [];
+        Events::on('email', function($archive) use (&$events_triggered, &$token) {
+            $events_triggered[] = 'email';
+
+            preg_match('#/verify-magic-link\?token=([^"]+)#', $archive['body'], $matches);
+            $token = urldecode($matches[1]);
+        });
+        Events::on('magicLogin', function() use (&$events_triggered) { $events_triggered[] = 'magicLogin'; });
+        Events::on('failedLogin', function($credentials) use (&$events_triggered) { $events_triggered[] = 'failedLogin'; });
+
+        // Get other user token
+        $otherUser = auth()->getProvider()->findById(946638323423);
+        $response = $this->post('users/authentication', [ 'email' => $otherUser->email ]);
+        $response->assertOk();
+        $this->assertEventTriggered('email');
+        $this->assertNotNull($token);
+
+        // Login other user
+        $events_triggered = [];
+        $response = $this->withSession()->get('verify-magic-link', ['token' => $token]);
+        $response->assertOk();
+        $response->assertRedirect();
+        $response->assertEquals(site_url('/'), $response->getRedirectUrl());
+        $this->assertContains('magicLogin', $events_triggered);
+        $this->assertNotContains('failedLogin', $events_triggered);
+        $response->assertEquals($otherUser, auth()->user());
+
+
+        
+        // Get other user token
+        $user = auth()->getProvider()->findById(2299488734);
+        $response = $this->post('users/authentication', [ 'email' => $user->email ]);
+        $response->assertOk();
+        $this->assertEventTriggered('email');
+        $this->assertNotNull($token);
+
+        // Login other user
+        $events_triggered = [];
+        $response = $this->withSession()->get('verify-magic-link', ['token' => $token]);
+        $response->assertOk();
+        $response->assertRedirect();
+        $response->assertEquals(site_url('/'), $response->getRedirectUrl());
+        $this->assertContains('magicLogin', $events_triggered);
+        $this->assertNotContains('failedLogin', $events_triggered);
+        $response->assertEquals($user, auth()->user());
+    }
 }

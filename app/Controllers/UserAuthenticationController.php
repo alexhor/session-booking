@@ -55,6 +55,7 @@ class UserAuthenticationController extends ResourceController
      * Handles the GET request from the email
      */
     public function verify() {
+        if (auth()->user()) auth()->logout();
         $magicLinkController = new MagicLinkController();
         $magicLinkController->initController($this->request, $this->response, $this->logger);
         $response = $magicLinkController->verify();
