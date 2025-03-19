@@ -66,7 +66,7 @@ function getSettingsList() {
             <thead>
                 <tr>
                     <th style="width: 300px"><?= lang('Admin.setting'); ?></th>
-                    <th><?= lang('Admin.value'); ?></th>
+                    <th style="width: 800px"><?= lang('Admin.value'); ?></th>
                     <th style="width: 300px"></th>
                 </tr>
             </thead>
@@ -74,8 +74,8 @@ function getSettingsList() {
                 <tr v-for="setting in settingsList">
                     <td>{{ setting.key }}</td>
                     <td>
-                        <input v-if="typeof setting.validation !== 'object'" v-model="setting.value">
-                        <select v-else v-model="setting.value">
+                       <input v-if="typeof setting.validation !== 'object'" v-model="setting.value" class="form-control">
+                       <select v-else v-model="setting.value" class="form-select">
                             <option v-for="option in setting.validation" :selected="option == setting.origValue">{{ option }}</option>
                         </select>
                     </td>
