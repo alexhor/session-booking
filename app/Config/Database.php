@@ -26,10 +26,10 @@ class Database extends Config
      */
     public array $default = [
         'DSN'          => '',
-        'hostname'     => 'gh-h-software-de_db',
-        'username'     => 'php',
-        'password'     => 'yKrHaPc0lAXxMr4ufbNpIMx8UJ21Iz7gfAO2WT0pMaY3Kfc649t4dui9EfjWcYEa2wkGTLnGg7',
-        'database'     => 'php',
+        'hostname'     => '',
+        'username'     => '',
+        'password'     => '',
+        'database'     => '',
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',
         'pConnect'     => false,
