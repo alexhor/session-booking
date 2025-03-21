@@ -23,6 +23,9 @@ class App extends BaseConfig
         'App.baseURL' => \string::class,
         'App.defaultLocale' => ['de', 'en'],
         'App.appTimezone' => [\DateTimeZone::class, 'listIdentifiers'],
+        'App.title' => \string::class,
+        'App.daysInAWeek' => \integer::class,
+        'App.weekStartTimestamp' => 'timestamp',
         'Email.fromEmail' => 'email',
         'Email.fromName' => \string::class,
         'Email.protocol' => ['mail', 'sendmail', 'smtp'],
@@ -40,10 +43,23 @@ class App extends BaseConfig
      * --------------------------------------------------------------------------
      */
     public array $apiPublicSettingKeys = [
-        'App.baseURL',
-        'App.defaultLocale',
-        'App.appTimezone',
+        'App.baseURL' => 'baseURL',
+        'App.defaultLocale' => 'defaultLocale',
+        'App.appTimezone' => 'appTimezone',
+        'App.title' => 'title',
+        'App.daysInAWeek' => 'daysInAWeek',
+        'App.weekStartTimestamp' => 'weekStartTimestamp',
     ];
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session booking settings
+     * --------------------------------------------------------------------------
+     * 
+     */
+    public string $title = 'Session Booking';
+    public int $daysInAWeek = 7;
+    public int|string $weekStartTimestamp = 'now';
 
     /**
      * --------------------------------------------------------------------------

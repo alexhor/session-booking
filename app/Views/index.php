@@ -1,33 +1,5 @@
 <?php
-function getSessionErrorsJson() {
-    $error_list = [];
-
-    if (session()->has('error')) {
-        array_push($error_list, [
-            'message' => session()->get('error'),
-            'status' => 400
-        ]);
-    }
-
-    if (session()->has('errors')) {
-        foreach (session()->get('errors') as $key => $message) {
-            array_push($error_list, [
-                'message' => $message,
-                'status' => 400
-            ]);
-        }
-    }
-
-    return json_encode($error_list);
-}
-
-$title = 'Buchungen - Gebetshaus Ravensburg';
 $additionalStyles= '';
-
-$configs = [
-    'daysInAWeek' => 8,
-    'weekStartTimestamp' => strtotime("06.04.2025 0:0:0"),
-];
 
 $eventMarkingList = [
     [
@@ -51,7 +23,7 @@ foreach($eventMarkingList as $i => &$marking) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?php echo htmlspecialchars($title); ?></title>
+    <title><?php echo htmlspecialchars($configs['title']); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="<?= site_url('style.css'); ?>" rel="stylesheet">
   </head>
@@ -61,7 +33,7 @@ foreach($eventMarkingList as $i => &$marking) {
     <!-- navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" :href="this.baseUrl"><?php echo htmlspecialchars($title); ?></a>
+            <a class="navbar-brand" :href="configs.baseURL">{{ configs.title }}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="<?= lang('Views.toggle_navigation'); ?>">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -292,7 +264,7 @@ document.app = createApp({
         this.fetchWeekBookings();
         this.__startTableHighlighting();
 
-        const pageLoadErrorMessageList = <?= getSessionErrorsJson(); ?>;
+        const pageLoadErrorMessageList = <?= json_encode($messages); ?>;
         pageLoadErrorMessageList.forEach(messageObject => {
             this.message(messageObject.message, messageObject.status, 0);
         });
@@ -317,7 +289,6 @@ document.app = createApp({
             userId: null,
             userName: "",
             userIsAdmin: false,
-            baseUrl: "<?php echo base_url(); ?>",
             registrationData: {
                 firstname: "",
                 lastname: "",
@@ -376,9 +347,14 @@ document.app = createApp({
         weekStartTimestamp: {
             get() {
                 if (null == this.__weekStartTimestamp) {
-                    this.__weekStartTimestamp = this.configs.weekStartTimestamp;
+                    this.__weekStartTimestamp = this.configs.weekStartTimestamp
+                    if ('now' == this.configs.weekStartTimestamp) {
+                        this.__weekStartTimestamp = this.getWeekStartTimestamp(new Date());
+                    }
 
                     const date = new Date(this.__weekStartTimestamp * 1000);
+                    this.__weekStartTimestamp = date.valueOf() / 1000;
+
                     this.calendar.selectedMonth = this.calendar.shownMonth = date.getMonth();
                     this.calendar.selectedYear = this.calendar.shownYear = date.getFullYear();
                     this.calendar.selectedWeek = this.selectedWeekFromDate(date.getDate());
@@ -694,7 +670,7 @@ document.app = createApp({
         },
         register() {
             var self = this;
-            axios.post(this.baseUrl + "users", {
+            axios.post(this.configs.baseURL + "users", {
                 firstname: this.registrationData.firstname,
                 lastname: this.registrationData.lastname,
                 email: this.registrationData.email,
@@ -716,19 +692,19 @@ document.app = createApp({
         },
         getLoggedInUser() {
             var self = this;
-            axios.get(this.baseUrl + "users/authentication/login")
+            axios.get(this.configs.baseURL + "users/authentication/login")
             .then((response) => {
                 var user_id = response.data;
                 if (user_id) {
                     self.userId = parseInt(user_id, 10);
                     self.userLoggedIn = true;
-
-                    axios.get(this.baseUrl + "users/" + self.userId)
+                    
+                    axios.get(this.configs.baseURL + "users/" + self.userId)
                     .then((response) => {
                         self.userName = response.data.firstname + " " + response.data.lastname;
                     });
 
-                    axios.get(this.baseUrl + "users/admin")
+                    axios.get(this.configs.baseURL + "users/admin")
                     .then((response) => {
                         self.userIsAdmin = response.data;
                     });
@@ -736,12 +712,12 @@ document.app = createApp({
             });
         },
         logout() {
-            window.location.replace(this.baseUrl + "users/authentication/logout");
+            window.location.replace(this.configs.baseURL + "users/authentication/logout");
         },
         bookSession(timestamp) {
             if (!this.userLoggedIn) return;
             var self = this;
-            axios.post(this.baseUrl + "sessions/bookings", {
+            axios.post(this.configs.baseURL + "sessions/bookings", {
                 "user_id": self.userId,
                 "start_time": timestamp,
             })
@@ -753,14 +729,14 @@ document.app = createApp({
             if (!this.userLoggedIn) return;
             var self = this;
             const bookingId = self.bookedTimestamps[timestamp].id;
-            axios.delete(this.baseUrl + "sessions/bookings/" + bookingId)
+            axios.delete(this.configs.baseURL + "sessions/bookings/" + bookingId)
             .then((response) => {
                 self.fetchWeekBookings();
             });
         },
         fetchWeekBookings() {
             var self = this;
-            axios.get(this.baseUrl + "sessions/bookings/" + this.weekStartTimestamp + "/" + this.weekEndTimestamp)
+            axios.get(this.configs.baseURL + "sessions/bookings/" + this.weekStartTimestamp + "/" + this.weekEndTimestamp)
             .then((response) => {
                 self.bookedTimestamps = {};
                 for (var sessionBooking of response.data) {

@@ -1,11 +1,5 @@
 <?php
-$title = 'Buchungen - Gebetshaus Ravensburg - Admin';
 $additionalStyles= '';
-
-$configs = [
-    'daysInAWeek' => 8,
-    'weekStartTimestamp' => strtotime("06.04.2025 0:0:0"),
-];
 
 $eventMarkingList = [
     [
@@ -29,7 +23,7 @@ foreach($eventMarkingList as $i => &$marking) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?php echo htmlspecialchars($title); ?></title>
+    <title><?php echo htmlspecialchars($configs['title']); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="<?= site_url('style.css'); ?>" rel="stylesheet">
   </head>
@@ -39,7 +33,7 @@ foreach($eventMarkingList as $i => &$marking) {
     <!-- navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" :href="this.baseUrl"><?php echo htmlspecialchars($title); ?></a>
+            <a class="navbar-brand" :href="this.baseUrl">{{ configs.title }}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="<?= lang('Views.toggle_navigation'); ?>">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -396,9 +390,14 @@ document.app = createApp({
         weekStartTimestamp: {
             get() {
                 if (null == this.__weekStartTimestamp) {
-                    this.__weekStartTimestamp = this.configs.weekStartTimestamp;
+                    this.__weekStartTimestamp = this.configs.weekStartTimestamp
+                    if ('now' == this.configs.weekStartTimestamp) {
+                        this.__weekStartTimestamp = this.getWeekStartTimestamp(new Date());
+                    }
 
                     const date = new Date(this.__weekStartTimestamp * 1000);
+                    this.__weekStartTimestamp = date.valueOf() / 1000;
+
                     this.calendar.selectedMonth = this.calendar.shownMonth = date.getMonth();
                     this.calendar.selectedYear = this.calendar.shownYear = date.getFullYear();
                     this.calendar.selectedWeek = this.selectedWeekFromDate(date.getDate());

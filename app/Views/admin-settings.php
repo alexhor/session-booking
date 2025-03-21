@@ -1,30 +1,8 @@
-<?php
-$title = 'Buchungen - Gebetshaus Ravensburg - Admin';
-
-function getSettingsList() {
-    $settingsList = [];
-
-    foreach (service('settings')->get('App.apiAllowedSettingKeys') as $settingKey => $validation) {
-        if (is_callable($validation)) $validation = $validation();
-        $value = service('settings')->get($settingKey);
-        $setting = [
-            'key' => $settingKey,
-            'origValue' => $value,
-            'value' => $value,
-            'validation' => $validation,
-        ];
-        $settingsList[$settingKey] = $setting;
-    }
-
-    return json_encode($settingsList);
-}
-?>
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?php echo htmlspecialchars($title); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="<?= site_url('style.css'); ?>" rel="stylesheet">
   </head>
@@ -34,7 +12,7 @@ function getSettingsList() {
     <!-- navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" :href="this.baseUrl"><?php echo htmlspecialchars($title); ?></a>
+            <a class="navbar-brand" :href="this.baseUrl">{{ pageTitle }}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="<?= lang('Views.toggle_navigation'); ?>">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -74,14 +52,22 @@ function getSettingsList() {
                 <tr v-for="setting in settingsList">
                     <td>{{ setting.key }}</td>
                     <td>
-                       <input v-if="typeof setting.validation !== 'object'" v-model="setting.value" class="form-control">
-                       <select v-else v-model="setting.value" class="form-select">
+                        <div v-if="setting.validation == 'timestamp'">
+                            <input v-if="!setting.value.usenow" type="date" v-model="setting.value.date" class="form-control" style="display: inline-block; width: auto;">
+                            <span class="form-check form-control" style="display: inline-block; width: auto; padding-left: 50px;">
+                                <input :id="setting.key + '_usenow'"type="checkbox" v-model="setting.value.usenow" class="form-check-input">
+                                <label :for="setting.key + '_usenow'"class="form-check-label">Use current time</label>
+                            </span>
+                        </div>
+                        <input v-else-if="setting.validation == 'integer'" v-model="setting.value" class="form-control" type="number">
+                        <input v-else-if="typeof setting.validation !== 'object'" v-model="setting.value" class="form-control">
+                        <select v-else v-model="setting.value" class="form-select">
                             <option v-for="option in setting.validation" :selected="option == setting.origValue">{{ option }}</option>
                         </select>
                     </td>
                     <td>
-                        <button v-if="setting.value != setting.origValue" type="button" class="btn btn-success" @click="saveSetting(setting)"><?= lang('Admin.save'); ?></button>
-                        <button v-if="setting.value != setting.origValue" type="button" class="btn btn-warning" @click="setting.value = setting.origValue"><?= lang('Admin.discard'); ?></button>
+                        <button v-if="JSON.stringify(setting.value) != JSON.stringify(setting.origValue)" type="button" class="btn btn-success" @click="saveSetting(setting)"><?= lang('Admin.save'); ?></button>
+                        <button v-if="JSON.stringify(setting.value) != JSON.stringify(setting.origValue)" type="button" class="btn btn-warning" @click="setting.value = setting.origValue"><?= lang('Admin.discard'); ?></button>
                         <button type="button" class="btn btn-danger" @click="clearSetting(setting)"><?= lang('Admin.reset'); ?></button>
                     </td>
                 </tr>
@@ -101,7 +87,7 @@ const { createApp, ref } = Vue
 document.app = createApp({
     mounted() {
         this.getLoggedInUser();
-        this.getsettingsList();
+        this.getUserList();
     },
     data() {
         var self = this;
@@ -118,16 +104,42 @@ document.app = createApp({
             return Promise.reject(e);
         });
 
-        return {
-            settingsList: <?= getSettingsList(); ?>,
+        const data = {
+            settingsList: <?= json_encode($configs); ?>,
             userId: false,
             userName: "",
             baseUrl: "<?php echo base_url(); ?>",
             messageList: {},
             __nextMessageId: 1,
-        }
+        };
+
+        Object.keys(data.settingsList).forEach((key, i) => {
+            const element = data.settingsList[key];
+            element.origValue = element.value;
+            if (element.validation == 'timestamp') {
+                const tmpValue = {
+                    'usenow': false,
+                };
+                if (element.value == 'now') {
+                    tmpValue.usenow = true;
+                }
+                else {
+                    const date = new Date(element.value * 1000);
+                    tmpValue.date = date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+                }
+                element.value = JSON.parse(JSON.stringify(tmpValue));
+                element.origValue = JSON.parse(JSON.stringify(tmpValue));
+            }
+        });
+
+        return data;
     },
     computed: {
+        pageTitle() {
+            const value = this.settingsList['App.title'].value;
+            document.title = value;
+            return value;
+        },
     },
     methods: {
         message(text, status=200, secondsToLive=10) {
@@ -149,7 +161,7 @@ document.app = createApp({
             clearTimeout(this.messageList[id].timeoutId);
             delete this.messageList[id];
         },
-        getsettingsList() {
+        getUserList() {
             axios.get(this.baseUrl + "users")
             .then((response) => {
                 this.userList = response.data;
@@ -196,8 +208,17 @@ document.app = createApp({
             }
         },
         saveSetting(setting) {
-            console.log(setting.value);
-            axios.put(this.baseUrl + 'settings/' + setting.key, { 'value': setting.value })
+            var value = setting.value;
+            if ('timestamp' == setting.validation) {
+                if (true == value.usenow) {
+                    value = 'now';
+                }
+                else {
+                    const date = new Date(value.date + ' 0:0');
+                    value = date.valueOf() / 1000;
+                }
+            }
+            axios.put(this.baseUrl + 'settings/' + setting.key, { 'value': value })
             .then((response) => {
                 this.updateConfigValue(setting);
             });
@@ -205,8 +226,24 @@ document.app = createApp({
         updateConfigValue(setting) {
             axios.get(this.baseUrl + 'settings/' + setting.key)
             .then((response) => {
-                this.settingsList[setting.key].value = response.data.value;
-                this.settingsList[setting.key].origValue = response.data.value;
+                if (response.data.validation == 'timestamp') {
+                    const tmpValue = {
+                        'usenow': false,
+                    };
+                    if (response.data.value == 'now') {
+                        tmpValue.usenow = true;
+                    }
+                    else {
+                        const date = new Date(response.data.value * 1000);
+                        tmpValue.date = date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+                    }
+                    this.settingsList[setting.key].value = JSON.parse(JSON.stringify(tmpValue));
+                    this.settingsList[setting.key].origValue = JSON.parse(JSON.stringify(tmpValue));
+                }
+                else {
+                    this.settingsList[setting.key].value = response.data.value;
+                    this.settingsList[setting.key].origValue = response.data.value;
+                }
             });
         },
     },

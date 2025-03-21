@@ -13,7 +13,7 @@ class SettingController extends ResourceController
 
     public function get($key = null)
     {
-        if (!in_array($key, setting('App.apiPublicSettingKeys')) && (!auth()->user() || !auth()->user()->can('settings.show'))) {
+        if (!array_key_exists($key, setting('App.apiPublicSettingKeys')) && (!auth()->user() || !auth()->user()->can('settings.show'))) {
             return $this->failUnauthorized();
         }
 
@@ -63,6 +63,14 @@ class SettingController extends ResourceController
         }
         else if ('password' == $valueTypeOrValidValueArray || \string::class == $valueTypeOrValidValueArray) {
             $value = strval($value);
+        }
+        else if ('timestamp' == $valueTypeOrValidValueArray) {
+            if (is_numeric($value)) {
+                $value = intval($value);
+            }
+            else if ('now' != $value) {
+                return $this->fail(lang('Validation.setting_invalid_value'));
+            }
         }
         else if (\integer::class == $valueTypeOrValidValueArray) {
             if (is_numeric($value)) {

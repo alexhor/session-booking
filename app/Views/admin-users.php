@@ -1,12 +1,9 @@
-<?php
-$title = 'Buchungen - Gebetshaus Ravensburg - Admin';
-?>
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?php echo htmlspecialchars($title); ?></title>
+    <title><?php echo htmlspecialchars($configs['title']); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="<?= site_url('style.css'); ?>" rel="stylesheet">
   </head>
@@ -16,7 +13,7 @@ $title = 'Buchungen - Gebetshaus Ravensburg - Admin';
     <!-- navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" :href="this.baseUrl"><?php echo htmlspecialchars($title); ?></a>
+            <a class="navbar-brand" :href="configs.baseURL">{{ configs.title }}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="<?= lang('Views.toggle_navigation'); ?>">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -107,8 +104,8 @@ document.app = createApp({
             userList: [],
             userId: false,
             userName: "",
-            baseUrl: "<?php echo base_url(); ?>",
             messageList: {},
+            configs: <?= json_encode($configs); ?>,
             __nextMessageId: 1,
         }
     },
@@ -135,14 +132,14 @@ document.app = createApp({
             delete this.messageList[id];
         },
         getUserList() {
-            axios.get(this.baseUrl + "users")
+            axios.get(this.configs.baseURL + "users")
             .then((response) => {
                 this.userList = response.data;
             });
         },
         getLoggedInUser() {
             var self = this;
-            axios.get(this.baseUrl + "users/authentication/login")
+            axios.get(this.configs.baseURL + "users/authentication/login")
             .then((response) => {
                 var user_id = response.data;
                 if (!user_id) {
@@ -152,7 +149,7 @@ document.app = createApp({
                     self.userId = parseInt(user_id, 10);
 
                     // Get users name
-                    axios.get(this.baseUrl + "users/" + self.userId)
+                    axios.get(this.configs.baseURL + "users/" + self.userId)
                     .then((response) => {
                         self.userName = response.data.firstname + " " + response.data.lastname;
                     });
@@ -160,11 +157,11 @@ document.app = createApp({
             });
         },
         __cleanupUserSession() {
-            window.location.replace(this.baseUrl);
+            window.location.replace(this.configs.baseURL);
         },
         logout() {
             var self = this;
-            axios.post(this.baseUrl + "users/authentication/logout", {})
+            axios.post(this.configs.baseURL + "users/authentication/logout", {})
             .then((response) => {
                 self.__cleanupUserSession();
             });
@@ -173,7 +170,7 @@ document.app = createApp({
             var confirmMessage = '<?= lang("Admin.really_delete_user"); ?>';
             confirmMessage = confirmMessage.replace('{user}', user.firstname + ' ' + user.lastname).replace('{email}', user.email);
             if (confirm(confirmMessage)) {
-                axios.delete(this.baseUrl + "users/" + user.id)
+                axios.delete(this.configs.baseURL + "users/" + user.id)
                 .then((response) => {
                     this.getUserList();
                 });
@@ -187,13 +184,13 @@ document.app = createApp({
                 }
             }
             if (user.groups.includes('admin')) {
-                axios.delete(this.baseUrl + 'users/' + user.id + '/groups/admin')
+                axios.delete(this.configs.baseURL + 'users/' + user.id + '/groups/admin')
                 .then((response) => {
                     this.getUserList();
                 });
             }
             else {
-                axios.put(this.baseUrl + 'users/' + user.id + '/groups/admin')
+                axios.put(this.configs.baseURL + 'users/' + user.id + '/groups/admin')
                 .then((response) => {
                     this.getUserList();
                 });
