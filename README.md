@@ -1,10 +1,12 @@
 # Session Booking
 Built on CodeIgniter 4 Application Starter
 
-## Installation & updates
+## Installation
 ```
 composer install --prefer-dist --no-progress
 spark migrate --all
+cd frontend
+npm run build
 ```
 
 ## Setup
@@ -44,3 +46,23 @@ More information about the plans for version 4 can be found in [CodeIgniter 4](h
 
 You can read the [user guide](https://codeigniter.com/user_guide/)
 corresponding to the latest version of the framework.
+
+## Dev Setup
+Set `CI_ENVIRONMENT = development` in `.env` file.
+
+In the `frontend` folder run `npm install` and then `npm run dev` to start the vite server.
+You will have to route all websocket connections for path `/vite/wss` to the vite server as Codeigniter can't handle websocket.
+
+For example this is how it can be done in apache:
+```
+<VirtualHost *:80>
+    # Here goes you normal config
+    ...
+
+    # Handle Vite WebSocket connections
+    <Location /vite/wss>
+        ProxyPass "ws://localhost:5173/vite/wss"
+        ProxyPassReverse "ws://localhost:5173/vite/wss"
+    </Location>
+</VirtualHost>
+```

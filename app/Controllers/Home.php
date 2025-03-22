@@ -6,6 +6,25 @@ use CodeIgniter\HTTP\RedirectResponse;
 
 class Home extends BaseController
 {
+    public function test(): string
+    {
+        return view('test', $this->getViewData());
+    }
+
+    public function serveVite($path = '')
+    {
+        $viteUrl = 'http://localhost:5173' . $_SERVER['REQUEST_URI'];
+        $client = \Config\Services::curlrequest();
+        $response = $client->get($viteUrl, ['http_errors' => false]);
+        
+        $contentType = $response->getHeader('Content-Type') ? $response->getHeader('Content-Type')->getValue() : 'application/javascript';
+
+        return $this->response
+            ->setStatusCode($response->getStatusCode())
+            ->setBody($response->getBody())
+            ->setHeader('Content-Type', $contentType);
+    }
+
     public function index(): string
     {
         return view('index', $this->getViewData());
