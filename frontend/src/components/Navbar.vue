@@ -1,5 +1,9 @@
 <script setup>
-import RegistrationModal from './modals/RegistrationModal.vue'
+import RegistrationModal from './modals/RegistrationModal.vue';
+import LoginModal from './modals/LoginModal.vue';
+import { ref, useTemplateRef } from 'vue';
+
+defineEmits(['message']);
 
 defineProps({
   lang: {
@@ -14,7 +18,12 @@ defineProps({
     type: Object,
     required: true,
   },
-})
+});
+
+const loginModalRef = useTemplateRef('loginModalRef');
+const requestLoginLink = (email) => {
+    loginModalRef.value.login(email);
+};
 </script>
 
 <template>
@@ -39,7 +48,8 @@ defineProps({
         </div>
     </nav>
 
-    <RegistrationModal @registered="requestLoginLinkAfterRegistration" :configs="configs" :lang="lang" />
+    <RegistrationModal @registered="requestLoginLink" :configs="configs" :lang="lang" @message="emitMessage" />
+    <LoginModal :configs="configs" :lang="lang" ref="loginModalRef" />
 </template>
 
 <script>
@@ -49,15 +59,15 @@ export default {
             window.location.replace(this.configs.baseURL + "users/authentication/logout");
         },
         requestLoginLinkAfterRegistration(email) {
-
-            console.log(email + "");
+            console.log(this.$refs['login-modal-ref'])
             return;
-            // Redirect to login link fetching
-            Vue.nextTick(function () {
-                document.getElementById("login-form").submit();
-            });
-        }
-        
+            const loginModalRef = ref('loginModalRef');
+            console.log(loginModalRef);
+            loginModalRef.login(email);
+        },
+        emitMessage(text, status) {
+            this.$emit('message', text, status);
+        },
     }
 }
 </script>

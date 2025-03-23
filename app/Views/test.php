@@ -65,13 +65,15 @@ document.php.lang = {
     'Views.logout': '<?= lang('Views.logout'); ?>',
     'Views.register': '<?= lang('Views.register'); ?>',
     'Views.login': '<?= lang('Views.login'); ?>',
-    'Views.register_new_account'
-    'Views.close'
-    'Views.already_have_an_account_then_login'
-    'Validation.user.firstname.label'
-    'Validation.user.lastname.label'
-    'Validation.user.email.label'
-    'Views.register'
+    'Views.register_new_account': '<?= lang('Views.register_new_account'); ?>',
+    'Views.close': '<?= lang('Views.close'); ?>',
+    'Views.already_have_an_account_then_login': '<?= lang('Views.already_have_an_account_then_login'); ?>',
+    'Validation.user.firstname.label': '<?= lang('Validation.user.firstname.label'); ?>',
+    'Validation.user.lastname.label': '<?= lang('Validation.user.lastname.label'); ?>',
+    'Validation.user.email.label': '<?= lang('Validation.user.email.label'); ?>',
+    'Views.register': '<?= lang('Views.register'); ?>',
+    'Views.no_account_yet_then_register': '<?= lang('Views.no_account_yet_then_register'); ?>',
+    'Views.request_login_link': '<?= lang('Views.request_login_link'); ?>',
 };
 </script>
 

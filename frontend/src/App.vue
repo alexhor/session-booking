@@ -4,25 +4,34 @@ import Navbar from './components/Navbar.vue'
 
 <template>
   <Navbar :lang="lang" :configs="configs" :user="user"/>
+
+  <!-- notifications -->
+  <div class="notification-wrapper">
+    <span v-for="message in messageList">
+      <span class="alert d-inline-block" :class="{ 'alert-success': message.status >= 200 && message.status < 300, 'alert-danger': message.status >= 300 }" role="alert">
+        <span class="text">{{ message.text }}</span>
+        <button type="button" class="btn-close" aria-label="{{ lang['Views.close'] }}" @click="clearMessage(message.id)"></button>
+      </span>
+    </span>
+  </div>
 </template>
 
 <script>
 export default {
   data() {
-    /*
+    const self = this;
     axios.interceptors.response.use(function (response) {
       return response;
     }, function (e) {
       if (401 == e.status) {
-        this.logout();
+        self.logout();
       }
       else {
-        this.message(Object.values(e.response.data.messages).join("\n"), e.response.data.status);
+        self.message(Object.values(e.response.data.messages).join("\n"), e.response.data.status);
       }
       
       return Promise.reject(e);
     });
-    */
 
     return {
       user: {
@@ -83,7 +92,31 @@ export default {
           });
         }
       });
-  },
+    },
+    message(text, status=200, secondsToLive=10) {
+      const id = this.__nextMessageId;
+      this.__nextMessageId++;
+
+      this.messageList[id] = {
+        id: id,
+        status: status,
+        text: text,
+      };
+
+      if (0 < secondsToLive) {
+        const timeoutId = setTimeout(() => {
+          delete this.messageList[id];
+        }, secondsToLive*1000);
+        this.messageList[id].timeoutId = timeoutId;
+      }
+    },
+    clearMessage(id) {
+      if (typeof this.messageList[id].timeoutId != "undefined") {
+        clearTimeout(this.messageList[id].timeoutId);
+      }
+      
+      delete this.messageList[id];
+    },
   },
 }
 </script>

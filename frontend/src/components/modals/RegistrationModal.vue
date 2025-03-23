@@ -1,5 +1,5 @@
 <script setup>
-defineEmits(['registered'])
+defineEmits(['registered', 'message']);
 
 defineProps({
   lang: {
@@ -10,7 +10,7 @@ defineProps({
     type: Object,
     required: true,
   },
-})
+});
 </script>
 
 <template>
@@ -69,12 +69,12 @@ export default {
             })
             .then((response) => {
                 if ("data" in response) {
-                    if (typeof response.data !== 'object') this.message(response.data, response.status);
-                    else if ("message" in response.data) this.message(response.data.message, response.status);
+                    if (typeof response.data !== 'object') this.$emit('message', response.data, response.status);
+                    else if ("message" in response.data) this.$emit('message', response.data.message, response.status);
                 }
-                else this.message(response.statusText, response.status);
+                else this.$emit('message', response.statusText, response.status);
 
-                $emit('registered', this.registrationData.email);
+                this.$emit('registered', this.registrationData.email);
             });
         },
     }
