@@ -1,3 +1,23 @@
+<?php
+$additionalStyles= '';
+
+$eventMarkingList = [
+    [
+        'startTimestamp' => strtotime("06.04.2025 18:0:0"),
+        'endTimestamp' => strtotime("13.04.2025 19:0:0"),
+        'color' => '#02cbb8',
+        'title' => '24/7 Gebet',
+        'description' => ""
+    ]
+];
+
+foreach($eventMarkingList as $i => &$marking) {
+    $marking['cssClasses'] = 'event-marking-' . $i;
+    $additionalStyles .= "." . $marking['cssClasses'] . " {
+        border-color: " . $marking['color'] . " !important;
+    }";
+}
+?>
 <!DOCTYPE html>
 <html>
   <head>
@@ -5,19 +25,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($configs['title']); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link href="<?= site_url('style.css'); ?>" rel="stylesheet">
   </head>
 <body>
 
+<div id="app"></div>
+
+<script>
+
+document.php = {};
+document.php.eventMarkingList = <?= json_encode($eventMarkingList); ?>;
+document.php.configs = <?= json_encode($configs); ?>;
+document.php.pageLoadErrorMessageList = <?= json_encode($messages); ?>;
+document.php.lang = {
+    monthNames: [
+        '<?= lang('Views.months.january'); ?>',
+        '<?= lang('Views.months.february'); ?>',
+        '<?= lang('Views.months.march'); ?>',
+        '<?= lang('Views.months.april'); ?>',
+        '<?= lang('Views.months.may'); ?>',
+        '<?= lang('Views.months.june'); ?>',
+        '<?= lang('Views.months.july'); ?>',
+        '<?= lang('Views.months.august'); ?>',
+        '<?= lang('Views.months.september'); ?>',
+        '<?= lang('Views.months.october'); ?>',
+        '<?= lang('Views.months.november'); ?>',
+        '<?= lang('Views.months.december'); ?>'
+    ],
+    dayNames: [
+        '<?= lang('Views.weekdays.long.monday'); ?>',
+        '<?= lang('Views.weekdays.long.tuesday'); ?>',
+        '<?= lang('Views.weekdays.long.wednesday'); ?>',
+        '<?= lang('Views.weekdays.long.thursday'); ?>',
+        '<?= lang('Views.weekdays.long.friday'); ?>',
+        '<?= lang('Views.weekdays.long.saturday'); ?>',
+        '<?= lang('Views.weekdays.long.sunday'); ?>',
+    ],
+    'Views.toggle_navigation': '<?= lang('Views.toggle_navigation'); ?>',
+    'Admin.admin': '<?= lang('Admin.admin'); ?>',
+    'Views.logout': '<?= lang('Views.logout'); ?>',
+    'Views.register': '<?= lang('Views.register'); ?>',
+    'Views.login': '<?= lang('Views.login'); ?>',
+    'Views.register_new_account'
+    'Views.close'
+    'Views.already_have_an_account_then_login'
+    'Validation.user.firstname.label'
+    'Validation.user.lastname.label'
+    'Validation.user.email.label'
+    'Views.register'
+};
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+
 <?php if ($_ENV['CI_ENVIRONMENT'] === 'development'): ?>
-    <script type="module" src="<?= base_url('vite/%40vite/client'); ?>"></script>
+    <script type="module" src="<?= base_url('vite/@vite/client'); ?>"></script>
     <script type="module" src="<?= base_url('vite/src/main.js'); ?>"></script>
 <?php else: ?>
     <script type="module" src="<?= base_url('build/assets/index.js'); ?>"></script>
 <?php endif; ?>
 
-<div id="app">
-    
-</div>
 </body>
 </html>
