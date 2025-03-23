@@ -3,7 +3,7 @@ import RegistrationModal from './modals/RegistrationModal.vue';
 import LoginModal from './modals/LoginModal.vue';
 import { ref, useTemplateRef } from 'vue';
 
-defineEmits(['message']);
+defineEmits(['message', 'navigate']);
 
 defineProps({
   lang: {
@@ -18,6 +18,10 @@ defineProps({
     type: Object,
     required: true,
   },
+  navigationPage: {
+    type: String,
+    required: true,
+  }
 });
 
 const loginModalRef = useTemplateRef('loginModalRef');
@@ -29,7 +33,7 @@ const requestLoginLink = (email) => {
 <template>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" :href="configs.baseURL">{{ configs.title }}</a>
+            <a class="navbar-brand" @click="$emit('navigate', 'start')">{{ configs.title }}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" :aria-label="lang['Views.toggle_navigation']">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -37,7 +41,9 @@ const requestLoginLink = (email) => {
                 <span class="me-auto"></span>
                 <ul v-if="user.loggedIn" class="navbar-nav mb-2 mb-lg-0">
                     <li class="nav-item"><a class="nav-link disabled">{{ user.name }}</a></li>
-                    <li class="nav-item" v-if="user.isAdmin"><a class="nav-link" :href="configs.baseURL + 'admin'">{{ lang['Admin.admin'] }}</a></li>
+                    <li class="nav-item" v-if="user.isAdmin"><a class="nav-link" :class="{ active: 'admin.sessions' == navigationPage }" @click="$emit('navigate', 'admin.sessions')">{{ lang['Admin.sessions'] }}</a></li>
+                    <li class="nav-item" v-if="user.isAdmin"><a class="nav-link" :class="{ active: 'admin.users' == navigationPage }" @click="$emit('navigate', 'admin.users')">{{ lang['Admin.users'] }}</a></li>
+                    <li class="nav-item" v-if="user.isAdmin"><a class="nav-link" :class="{ active: 'admin.settings' == navigationPage }" @click="$emit('navigate', 'admin.settings')">{{ lang['Admin.settings'] }}</a></li>
                     <li class="nav-item"><a class="nav-link" @click="logout()" href="#">{{ lang['Views.logout'] }}</a></li>
                 </ul>
                 <ul v-else class="navbar-nav mb-2 mb-lg-0">
