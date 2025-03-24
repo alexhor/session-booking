@@ -5,6 +5,7 @@ namespace App\Controllers;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
+use Tests\Support\Database\Seeds\SettingSeeder;
 use Tests\Support\Database\Seeds\UserSeeder;
 use App\Models\UserAuthentication;
 use CodeIgniter\Events\Events;
@@ -30,6 +31,7 @@ class SettingControllerTest extends CIUnitTestCase
         parent::tearDown();
         $this->clearAuth();
         $this->settings->flush();
+        $this->seed(SettingSeeder::class);
     }
 
     protected function clearAuth(): void
@@ -647,5 +649,38 @@ class SettingControllerTest extends CIUnitTestCase
         $response = $this->actingAs($adminUser)->delete('settings/' . urlencode($settingKey));
         $response->assertOk();
         $this->assertNotEquals($value, $this->settings->get($settingKey));
+    }
+
+    public function testGetWithValidationData(): void
+    {
+        // No user logged in
+        $response = $this->get('settings/validation');
+        $response->assertNotOk();
+        $response->assertStatus(401);
+        
+        // User logged in
+        $user = auth()->getProvider()->findById(2299488734);
+        $response = $this->actingAs($user)->get('settings/validation');
+        $response->assertNotOk();
+        $response->assertStatus(401);
+
+        // Admin logged in
+        $adminUser = auth()->getProvider()->findById(772843);
+        $response = $this->actingAs($adminUser)->get('settings/validation');
+        $response->assertOk();
+        $response_data = json_decode($response->getJson(), true);
+        $this->assertIsArray($response_data);
+
+        foreach(setting('App.apiAllowedSettingKeys') as $key => $validation) {
+            $this->assertArrayHasKey($key, $response_data);
+            $setting = $response_data[$key];
+            $this->assertArrayHasKey('value', $setting);
+            $this->assertEquals(setting($key), $setting['value']);
+            $this->assertArrayHasKey('key', $setting);
+            $this->assertEquals($key, $setting['key']);
+            $this->assertArrayHasKey('validation', $setting);
+            if (is_callable($validation)) $validation = $validation();
+            $this->assertEquals($validation, $setting['validation']);
+        }
     }
 }

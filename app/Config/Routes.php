@@ -59,6 +59,7 @@ $routes->delete('sessions/bookings/(:num)', 'SessionBookingController::delete/$1
 $routes->post('sessions/bookings', 'SessionBookingController::create');
 
 # Settings
+$routes->get('settings/validation', 'SettingController::getWithValidationData');
 $routes->get('settings/(:segment)', 'SettingController::get/$1');
 $routes->put('settings/(:segment)', 'SettingController::set/$1');
 $routes->delete('settings/(:segment)', 'SettingController::delete/$1');

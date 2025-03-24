@@ -25,6 +25,8 @@ class UserSeeder extends Seeder
 
     public function run(): void
     {
+        $this->call(SettingSeeder::class);
+
         $users = [
             [
                 'id' => 772843,

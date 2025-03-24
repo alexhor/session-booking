@@ -13,7 +13,7 @@ class SettingController extends ResourceController
 
     public function get($key = null)
     {
-        if (!array_key_exists($key, setting('App.apiPublicSettingKeys')) && (!auth()->user() || !auth()->user()->can('settings.show'))) {
+        if (!in_array($key, setting('App.apiPublicSettingKeys')) && (!auth()->user() || !auth()->user()->can('settings.show'))) {
             return $this->failUnauthorized();
         }
 
@@ -116,5 +116,26 @@ class SettingController extends ResourceController
 
         setting()->forget($key);
         return $this->respondDeleted($key);
+    }
+
+    public function getWithValidationData()
+    {
+        if (!auth()->user() || !auth()->user()->can('settings.update')) {
+            return $this->failUnauthorized();
+        }
+        
+        $settingsList = [];
+    
+        foreach (setting('App.apiAllowedSettingKeys') as $settingKey => $validation) {
+            if (is_callable($validation)) $validation = $validation();
+            $setting = [
+                'key' => $settingKey,
+                'value' => setting($settingKey),
+                'validation' => $validation,
+            ];
+            $settingsList[$settingKey] = $setting;
+        }
+    
+        return $this->respond($settingsList, 200);
     }
 }
