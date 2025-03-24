@@ -1,7 +1,5 @@
 <script setup>
 import Navbar from './components/Navbar.vue'
-import Legend from './components/calendar/Legend.vue'
-import WeekNavigation from './components/calendar/WeekNavigation.vue'
 import SessionTable from './components/calendar/SessionTable.vue'
 import UserList from './components/admin/UserList.vue'
 import Settings from './components/admin/Settings.vue'
@@ -29,12 +27,11 @@ import Settings from './components/admin/Settings.vue'
   
   <div class="container">
     <div v-if="user.isAdmin && 'admin.sessions' == navigationPage" class="container">
-      ADMIN.SESSIONS
-      <Legend></Legend>
-
-      <WeekNavigation />
-
-      <SessionTable />
+      <SessionTable
+        :lang="lang"
+        :configs="configs"
+        :user="user"
+        :admin-view="true"/>
     </div>
     <div v-else-if="user.isAdmin && 'admin.users' == navigationPage">
       <UserList :lang="lang" :configs="configs" :user="user"/>
@@ -47,12 +44,10 @@ import Settings from './components/admin/Settings.vue'
         @setting-updated="updateSetting"/>
     </div>
     <div v-else class="container">
-      ELSE
-      <Legend></Legend>
-
-      <WeekNavigation />
-
-      <SessionTable />
+      <SessionTable
+        :lang="lang"
+        :configs="configs"
+        :user="user"/>
     </div>
   </div>
 </template>
@@ -84,26 +79,7 @@ export default {
       loginEmail: "",
       messageList: {},
       __nextMessageId: 1,
-      config: {
-        session: {
-          interval: 60 * 60,
-          offset: 0,
-        },
-      },
       navigationPage: "start",
-
-      __weekStartTimestamp: null,
-      bookedTimestamps: {},
-      calendar: {/*
-        show: false,
-        shownMonth: (new Date()).getMonth(),
-        shownYear: (new Date()).getFullYear(),
-        selectedWeek: this.selectedWeekFromDate((new Date()).getDate()),
-        selectedMonth: (new Date()).getMonth(),
-        selectedYear: (new Date()).getFullYear(),
-        mobileSelectedDay: 0,*/
-      },
-      eventMarkingList: document.php.eventMarkingList,
       configs: document.php.configs,
       lang: document.php.lang,
     }

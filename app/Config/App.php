@@ -26,6 +26,8 @@ class App extends BaseConfig
         'App.title' => \string::class,
         'App.daysInAWeek' => \integer::class,
         'App.weekStartTimestamp' => 'timestamp',
+        'App.sessionInterval' => \integer::class,
+        'App.sessionOffset' => \integer::class,
         'Email.fromEmail' => 'email',
         'Email.fromName' => \string::class,
         'Email.protocol' => ['mail', 'sendmail', 'smtp'],
@@ -49,6 +51,8 @@ class App extends BaseConfig
         'App.title' => 'title',
         'App.daysInAWeek' => 'daysInAWeek',
         'App.weekStartTimestamp' => 'weekStartTimestamp',
+        'App.sessionInterval' => 'sessionInterval',
+        'App.sessionOffset' => 'sessionOffset',
     ];
 
     /**
@@ -60,6 +64,8 @@ class App extends BaseConfig
     public string $title = 'Session Booking';
     public int $daysInAWeek = 7;
     public int|string $weekStartTimestamp = 'now';
+    public int $sessionInterval = HOUR;
+    public int $sessionOffset = 0;
 
     /**
      * --------------------------------------------------------------------------
