@@ -1,9 +1,20 @@
 <script setup>
 import Navbar from './components/Navbar.vue'
+import Legend from './components/calendar/Legend.vue'
+import WeekNavigation from './components/calendar/WeekNavigation.vue'
+import SessionTable from './components/calendar/SessionTable.vue'
+import UserList from './components/admin/UserList.vue'
+import Settings from './components/admin/Settings.vue'
 </script>
 
 <template>
-  <Navbar :lang="lang" :configs="configs" :user="user"/>
+  <Navbar
+    :lang="lang"
+    :configs="configs"
+    :user="user"
+    :navigationPage="navigationPage"
+    @message="(text, status) => message(text, status)"
+    @navigate="(page) => navigationPage = page"/>
 
   <!-- notifications -->
   <div class="notification-wrapper">
@@ -13,6 +24,36 @@ import Navbar from './components/Navbar.vue'
         <button type="button" class="btn-close" aria-label="{{ lang['Views.close'] }}" @click="clearMessage(message.id)"></button>
       </span>
     </span>
+  </div>
+
+  
+  <div class="container">
+    <div v-if="user.isAdmin && 'admin.sessions' == navigationPage" class="container">
+      ADMIN.SESSIONS
+      <Legend></Legend>
+
+      <WeekNavigation />
+
+      <SessionTable />
+    </div>
+    <div v-else-if="user.isAdmin && 'admin.users' == navigationPage">
+      <UserList :lang="lang" :configs="configs" :user="user"/>
+    </div>
+    <div v-else-if="user.isAdmin && 'admin.settings' == navigationPage">
+      <Settings
+        :lang="lang"
+        :configs="configs"
+        :user="user"
+        @setting-updated="updateSetting"/>
+    </div>
+    <div v-else class="container">
+      ELSE
+      <Legend></Legend>
+
+      <WeekNavigation />
+
+      <SessionTable />
+    </div>
   </div>
 </template>
 
@@ -43,13 +84,15 @@ export default {
       loginEmail: "",
       messageList: {},
       __nextMessageId: 1,
-      __weekStartTimestamp: null,
       config: {
         session: {
           interval: 60 * 60,
           offset: 0,
         },
       },
+      navigationPage: "start",
+
+      __weekStartTimestamp: null,
       bookedTimestamps: {},
       calendar: {/*
         show: false,
@@ -116,6 +159,12 @@ export default {
       }
       
       delete this.messageList[id];
+    },
+    updateSetting(key) {
+      axios.get(this.configs.baseURL + "settings/" + key)
+      .then((response) => {
+        this.configs[key] = response.data.value;
+      });
     },
   },
 }
