@@ -3,6 +3,8 @@ import UserList from '../admin/UserList.vue';
 import Legend from './Legend.vue'
 import WeekNavigation from './WeekNavigation.vue'
 import SessionActions from './SessionActions.vue'
+import SessionDetailsModal from '../modals/SessionDetailsModal.vue'
+import NewSessionModal from '../modals/NewSessionModal.vue'
 
 defineProps({
   lang: {
@@ -49,11 +51,27 @@ defineProps({
                         :booking="getBookedTime(weekStartTimestamp, rowTimestamp, addDay)"
                         :timestamp="weekStartTimestamp + rowTimestamp + addDay*24*60*60"
                         :user-list="userList"
+                        @show-booking-details="(booking) => { sessionDetails = booking; sessionDetailsModal.show(); }"
+                        @show-create-booking="(timestamp) => { newSessionTimestamp = timestamp; newSessionModal.show() }"
                         @updated="fetchWeekBookings"/>
                 </td>
             </tr>
         </tbody>
     </table>
+
+    <SessionDetailsModal
+        :lang="lang"
+        :configs="configs"
+        :user-list="userList"
+        :session-details="sessionDetails"
+        @deleted="fetchWeekBookings"/>
+
+    <NewSessionModal
+        :lang="lang"
+        :configs="configs"
+        :user="user"
+        :timestamp="newSessionTimestamp"
+        @created="fetchWeekBookings"/>
 </template>
 
 <script>
@@ -61,6 +79,9 @@ export default {
     mounted() {
         this.fetchWeekBookings();
         this.__startTableHighlighting();
+
+        this.sessionDetailsModal = new bootstrap.Modal(document.getElementById("sessionDetailsModal"));
+        this.newSessionModal = new bootstrap.Modal(document.getElementById("newSessionModal"));
     },
     data() {
         return {
@@ -69,6 +90,10 @@ export default {
             bookedTimestamps: {},
             __weekStartTimestamp: null,
             bookedTimestamps: {},
+            sessionDetails: null,
+            sessionDetailsModal: null,
+            newSessionModal: null,
+            newSessionTimestamp: 0,
             calendar: {
                 show: false,
                 shownMonth: (new Date()).getMonth(),
@@ -160,7 +185,10 @@ export default {
         fetchWeekBookings() {
             axios.get(this.$props.configs.baseURL + "sessions/bookings/" + this.weekStartTimestamp + "/" + this.weekEndTimestamp)
             .then((response) => {
+                this.sessionDetailsModal.hide();
+                this.newSessionModal.hide();
                 this.bookedTimestamps = {};
+
                 for (var sessionBooking of response.data) {
                     if (typeof sessionBooking.id == "undefined") sessionBooking.id = false;
                     if (typeof sessionBooking.user_id == "undefined") sessionBooking.user_id = false;

@@ -1,5 +1,5 @@
 <script setup>
-defineEmits(['updated'])
+defineEmits(['updated', 'showBookingDetails', 'showCreateBooking'])
 
 defineProps({
   lang: {
@@ -40,11 +40,11 @@ defineProps({
     </button>
     <span v-else-if="null != booking && adminView"
         class="booked"
-        @click="showBookingDetails()"
+        @click="$emit('showBookingDetails', booking)"
         :class="{ no_background_image: hasTitleOrDescription() }">
         <b v-if="booking.title">{{ booking.title }}</b><br>
         <small v-if="booking.description">{{ booking.description }}</small>
-        <div class="user-info" v-if="booking.user_id && ">{{ userList[booking.user_id].firstname + " " + userList[booking.user_id].lastname }}</div>
+        <div class="user-info" v-if="booking.user_id">{{ userList[booking.user_id].firstname + " " + userList[booking.user_id].lastname }}</div>
         <div class="user-info" v-if="booking.user_id">{{ userList[booking.user_id].email }}</div>
     </span>
     <span v-else-if="null !== booking" class="booked" :class="{ no_background_image: hasTitleOrDescription() }">
@@ -61,6 +61,11 @@ export default {
         bookSession() {
             if (!this.$props.user.loggedIn) return;
 
+            if (this.$props.adminView) {
+                this.$emit('showCreateBooking', this.$props.timestamp);
+                return;
+            }
+
             axios.post(this.configs.baseURL + "sessions/bookings", {
                 "user_id": this.user.id,
                 "start_time": this.$props.timestamp,
@@ -71,6 +76,11 @@ export default {
         },
         deleteBookedSession() {
             if (!this.$props.user.loggedIn || !this.$props.booking) return;
+
+            if (this.$props.adminView) {
+                this.$emit('showBookingDetails', this.$props.booking);
+                return;
+            }
             
             axios.delete(this.configs.baseURL + "sessions/bookings/" + this.$props.booking.id)
             .then((response) => {
@@ -83,9 +93,6 @@ export default {
             if (typeof this.$props.booking.title !== "undefined" && this.$props.booking.title !== null && this.$props.booking.title != '') return true;
             else if (typeof this.$props.booking.description !== "undefined" && this.$props.booking.description != null && this.$props.booking.description != '') return true;
             else return false;
-        },
-        showBookingDetails() {
-
         },
     }
 }

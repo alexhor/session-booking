@@ -60,6 +60,7 @@ document.php.lang = {
         '<?= lang('Views.weekdays.long.saturday'); ?>',
         '<?= lang('Views.weekdays.long.sunday'); ?>',
     ],
+
     'Views.toggle_navigation': '<?= lang('Views.toggle_navigation'); ?>',
     'Views.logout': '<?= lang('Views.logout'); ?>',
     'Views.register': '<?= lang('Views.register'); ?>',
@@ -70,10 +71,12 @@ document.php.lang = {
     'Views.register': '<?= lang('Views.register'); ?>',
     'Views.no_account_yet_then_register': '<?= lang('Views.no_account_yet_then_register'); ?>',
     'Views.request_login_link': '<?= lang('Views.request_login_link'); ?>',
+
     'Validation.user.id.label': '<?= lang('Validation.user.id.label'); ?>',
     'Validation.user.firstname.label': '<?= lang('Validation.user.firstname.label'); ?>',
     'Validation.user.lastname.label': '<?= lang('Validation.user.lastname.label'); ?>',
     'Validation.user.email.label': '<?= lang('Validation.user.email.label'); ?>',
+
     'Admin.admin': '<?= lang('Admin.admin'); ?>',
     'Admin.sessions': '<?= lang('Admin.sessions'); ?>',
     'Admin.settings': '<?= lang('Admin.settings'); ?>',
@@ -87,6 +90,16 @@ document.php.lang = {
     'Admin.really_clear_setting': '<?= lang('Admin.really_clear_setting'); ?>',
     'Admin.really_delete_user': '<?= lang('Admin.really_delete_user'); ?>',
     'Admin.really_remove_self_from_admin': '<?= lang('Admin.really_remove_self_from_admin'); ?>',
+
+    'Admin.session_details.details': '<?= lang('Admin.session_details.details'); ?>',
+    'Admin.session_details.user': '<?= lang('Admin.session_details.user'); ?>',
+    'Admin.session_details.time': '<?= lang('Admin.session_details.time'); ?>',
+    'Admin.session_details.title': '<?= lang('Admin.session_details.title'); ?>',
+    'Admin.session_details.title_is_public': '<?= lang('Admin.session_details.title_is_public'); ?>',
+    'Admin.session_details.description': '<?= lang('Admin.session_details.description'); ?>',
+    'Admin.session_details.description_is_public': '<?= lang('Admin.session_details.description_is_public'); ?>',
+    'Admin.session_details.delete': '<?= lang('Admin.session_details.delete'); ?>',
+    'Admin.session_details.add': '<?= lang('Admin.session_details.add'); ?>',
 };
 </script>
 
