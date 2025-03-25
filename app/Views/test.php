@@ -121,5 +121,9 @@ document.php.lang = {
     <script type="module" src="<?= base_url('build/assets/index.js'); ?>"></script>
 <?php endif; ?>
 
+
+<style>
+    <?= $additionalStyles; ?>
+</style>
 </body>
 </html>
