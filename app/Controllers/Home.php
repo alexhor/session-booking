@@ -6,11 +6,6 @@ use CodeIgniter\HTTP\RedirectResponse;
 
 class Home extends BaseController
 {
-    public function test(): string
-    {
-        return view('test', $this->getViewData());
-    }
-
     public function serveVite($path = '')
     {
         $viteUrl = 'http://localhost:5173' . $_SERVER['REQUEST_URI'];
@@ -30,37 +25,11 @@ class Home extends BaseController
         return view('index', $this->getViewData());
     }
 
-    public function adminUsers(): RedirectResponse|string
-    {
-        if (!auth()->user() || !auth()->user()->inGroup('admin')) return redirect()->to('/')->with('error', lang('Admin.access_denied'));
-        else return view('admin-users', $this->getViewData());
-    }
-
-    public function adminSettings(): RedirectResponse|string
-    {
-        if (!auth()->user() || !auth()->user()->inGroup('admin')) return redirect()->to('/')->with('error', lang('Admin.access_denied'));
-        else return view('admin-settings', $this->getSettingsViewData());
-    }
-
-    public function admin(): RedirectResponse|string
-    {
-        if (!auth()->user() || !auth()->user()->inGroup('admin')) return redirect()->to('/')->with('error', lang('Admin.access_denied'));
-        else return view('admin', $this->getViewData());
-    }
-
     protected function getViewData(): array
     {
         return [
             'messages' => $this->getSessionMessages(),
             'configs' => $this->getPublicConfigData(),
-        ];
-    }
-
-    protected function getSettingsViewData(): array
-    {
-        return [
-            'messages' => $this->getSessionMessages(),
-            'configs' => $this->getConfigData(),
         ];
     }
 
@@ -95,23 +64,5 @@ class Home extends BaseController
             $config[$configKey] = setting($key);
         }
         return $config;
-    }
-
-    protected function getConfigData(): array
-    {
-        helper('setting');
-        $settingsList = [];
-    
-        foreach (setting('App.apiAllowedSettingKeys') as $settingKey => $validation) {
-            if (is_callable($validation)) $validation = $validation();
-            $setting = [
-                'key' => $settingKey,
-                'value' => setting($settingKey),
-                'validation' => $validation,
-            ];
-            $settingsList[$settingKey] = $setting;
-        }
-    
-        return $settingsList;
     }
 }

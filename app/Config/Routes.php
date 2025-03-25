@@ -5,13 +5,9 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/test', 'Home::test');
 $routes->get('/vite/(:any)', 'Home::serveVite/$1');
 
 $routes->get('/', 'Home::index');
-$routes->get('/admin', 'Home::admin');
-$routes->get('/admin/users', 'Home::adminUsers');
-$routes->get('/admin/settings', 'Home::adminSettings');
 
 // TODO: transfer all config in UI into settings api
 // TODO: add email reminder 24h before a booked session
