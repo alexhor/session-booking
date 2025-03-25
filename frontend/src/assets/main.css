@@ -7,6 +7,19 @@ div:not(.navbar) > .container {
   padding-bottom: 50px;
 }
 
+.show-hide-password-icon {
+  position: absolute;
+  right: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 100%;
+  width: 40px;
+  padding: 8px;
+  background-color: #bcbbbb;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+}
+
 @media all and (max-width: 1919px) {
   #app > .container {
       margin: 0px 20px;
