@@ -59,6 +59,36 @@ defineProps({
         </tbody>
     </table>
 
+    <!-- mobile table -->
+    <div class="session-overview-mobile">
+        <div class="day" v-for="(_, addDay) in configs.daysInAWeek" :class="{ active: addDay == mobileSelectedDay }">
+            <div class="row heading">
+                <div class="time"></div>
+                <div class="booking">
+                    <button @click="previousDay()">&lt;</button>
+                    <span>{{ weekDayNameFromTimestamp(weekStartTimestamp + 60*60*24*addDay) }} - {{ dayMonthFromTimestamp(weekStartTimestamp + 60*60*24*addDay) }}</span>
+                    <button @click="nextDay()">&gt;</button>
+                </div>
+            </div>
+            <div v-for="rowTimestamp in rowsTimestampsList" class="row">
+                <div class="time">{{ timeFromRowTimestamp(rowTimestamp) }}</div>
+                <div class="booking" :class="getEventMarkingClass(weekStartTimestamp + rowTimestamp + addDay*24*60*60)">
+                    <SessionActions
+                    :lang="lang"
+                    :configs="configs"
+                    :user="user"
+                    :admin-view="adminView"
+                    :booking="getBookedTime(weekStartTimestamp, rowTimestamp, addDay)"
+                    :timestamp="weekStartTimestamp + rowTimestamp + addDay*24*60*60"
+                    :user-list="userList"
+                    @show-booking-details="(booking) => { sessionDetails = booking; sessionDetailsModal.show(); }"
+                    @show-create-booking="(timestamp) => { newSessionTimestamp = timestamp; newSessionModal.show() }"
+                    @updated="fetchWeekBookings"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <SessionDetailsModal
         :lang="lang"
         :configs="configs"
@@ -94,15 +124,7 @@ export default {
             sessionDetailsModal: null,
             newSessionModal: null,
             newSessionTimestamp: 0,
-            calendar: {
-                show: false,
-                shownMonth: (new Date()).getMonth(),
-                shownYear: (new Date()).getFullYear(),
-                selectedWeek: this.selectedWeekFromDate((new Date()).getDate()),
-                selectedMonth: (new Date()).getMonth(),
-                selectedYear: (new Date()).getFullYear(),
-                mobileSelectedDay: 0,
-            },
+            mobileSelectedDay: 0,
             eventMarkingList: document.php.eventMarkingList,
         };
     },
@@ -145,17 +167,9 @@ export default {
                     if ('now' == this.$props.configs.weekStartTimestamp) {
                         this.__weekStartTimestamp = this.getWeekStartTimestamp(new Date());
                     }
-
-                    const date = new Date(this.__weekStartTimestamp * 1000);
-                    this.__weekStartTimestamp = date.valueOf() / 1000;
-
-                    this.calendar.selectedMonth = this.calendar.shownMonth = date.getMonth();
-                    this.calendar.selectedYear = this.calendar.shownYear = date.getFullYear();
-                    this.calendar.selectedWeek = this.selectedWeekFromDate(date.getDate());
-
-                    return this.__weekStartTimestamp;
                 }
-                else return this.__weekStartTimestamp;
+                
+                return this.__weekStartTimestamp;
             },
             set(value) {
                 this.__weekStartTimestamp = value;
@@ -250,6 +264,24 @@ export default {
             }
             else {
                 return this.bookedTimestamps[startTime];
+            }
+        },
+        previousDay() {
+            if (0 == this.mobileSelectedDay) {
+                this.mobileSelectedDay = this.$props.configs.daysInAWeek - 1;
+                this.weekStartTimestamp -= 60*60*24*this.$props.configs.daysInAWeek;
+            }
+            else {
+                this.mobileSelectedDay--;
+            }
+        },
+        nextDay() {
+            if (this.$props.configs.daysInAWeek - 1 == this.mobileSelectedDay) {
+                this.mobileSelectedDay = 0;
+                this.weekStartTimestamp += 60*60*24*this.$props.configs.daysInAWeek;
+            }
+            else {
+                this.mobileSelectedDay++;
             }
         },
     }
