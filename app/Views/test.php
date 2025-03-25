@@ -17,6 +17,7 @@ foreach($eventMarkingList as $i => &$marking) {
         border-color: " . $marking['color'] . " !important;
     }";
 }
+$configs['eventMarkingList'] = $eventMarkingList;
 ?>
 <!DOCTYPE html>
 <html>
@@ -33,7 +34,6 @@ foreach($eventMarkingList as $i => &$marking) {
 <script>
 
 document.php = {};
-document.php.eventMarkingList = <?= json_encode($eventMarkingList); ?>;
 document.php.configs = <?= json_encode($configs); ?>;
 document.php.pageLoadErrorMessageList = <?= json_encode($messages); ?>;
 document.php.lang = {
@@ -71,6 +71,13 @@ document.php.lang = {
     'Views.register': '<?= lang('Views.register'); ?>',
     'Views.no_account_yet_then_register': '<?= lang('Views.no_account_yet_then_register'); ?>',
     'Views.request_login_link': '<?= lang('Views.request_login_link'); ?>',
+    'Views.weekdays.short.mon': '<?= lang('Views.weekdays.short.mon'); ?>',
+    'Views.weekdays.short.tue': '<?= lang('Views.weekdays.short.tue'); ?>',
+    'Views.weekdays.short.wed': '<?= lang('Views.weekdays.short.wed'); ?>',
+    'Views.weekdays.short.thu': '<?= lang('Views.weekdays.short.thu'); ?>',
+    'Views.weekdays.short.fri': '<?= lang('Views.weekdays.short.fri'); ?>',
+    'Views.weekdays.short.sat': '<?= lang('Views.weekdays.short.sat'); ?>',
+    'Views.weekdays.short.sun': '<?= lang('Views.weekdays.short.sun'); ?>',
 
     'Validation.user.id.label': '<?= lang('Validation.user.id.label'); ?>',
     'Validation.user.firstname.label': '<?= lang('Validation.user.firstname.label'); ?>',

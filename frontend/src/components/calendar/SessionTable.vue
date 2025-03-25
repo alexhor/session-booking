@@ -1,5 +1,4 @@
 <script setup>
-import UserList from '../admin/UserList.vue';
 import Legend from './Legend.vue'
 import WeekNavigation from './WeekNavigation.vue'
 import SessionActions from './SessionActions.vue'
@@ -27,6 +26,17 @@ defineProps({
 </script>
 
 <template>
+    <Legend :event-marking-list="configs.eventMarkingList"/>
+    <br>
+    <WeekNavigation
+        :lang="lang"
+        :configs="configs"
+        :week-start-timestamp="weekStartTimestamp"
+        :week-end-timestamp="weekEndTimestamp"
+        @previous-week="previousWeek"
+        @next-week="nextWeek"
+        @set-week-start-timestamp="(timestamp) => { weekStartTimestamp = timestamp; console.log(weekStartTimestamp); }"/>
+
     <table class="table table-hover session-overview" cellspacing="0">
         <thead style="position: sticky; top: 0">
             <tr style="background-color: white;">
@@ -125,7 +135,6 @@ export default {
             newSessionModal: null,
             newSessionTimestamp: 0,
             mobileSelectedDay: 0,
-            eventMarkingList: document.php.eventMarkingList,
         };
     },
     computed: {
@@ -176,7 +185,7 @@ export default {
             },
         },
         weekEndTimestamp() {
-            return this.weekStartTimestamp + this.$props.configs.daysInAWeek*24*60*60 + 23*60*60;
+            return this.weekStartTimestamp + (this.$props.configs.daysInAWeek-1)*24*60*60 + 23*60*60;
         },
     },
     methods: {
@@ -220,12 +229,6 @@ export default {
             const newTimestamp = (new Date(d.setDate(diff))).setHours(0, 0, 0, 0)
             return Math.floor(newTimestamp / 1000);
         },
-        selectedWeekFromDate(day) {
-            const firstWeekday = (new Date()).getDay();
-            for (let i=0; i<6; i++) {
-                if (day <= 7-firstWeekday + i*7) return i+1;
-            }
-        },
         weekDayNameFromTimestamp(timestamp) {
             const date = new Date(timestamp * 1000);
             var weekday = date.getDay() == 0 ? 7 : date.getDay();
@@ -249,7 +252,7 @@ export default {
         },
         getEventMarkingClass(timestamp) {
             var classList = [];
-            this.eventMarkingList.forEach(marking => {
+            this.$props.configs.eventMarkingList.forEach(marking => {
                 if (marking.startTimestamp <= timestamp && timestamp < marking.endTimestamp) {
                     classList.push(marking.cssClasses);
                 }
@@ -266,10 +269,16 @@ export default {
                 return this.bookedTimestamps[startTime];
             }
         },
+        previousWeek() {
+            this.weekStartTimestamp -= 60*60*24*7;
+        },
+        nextWeek() {
+            this.weekStartTimestamp += 60*60*24*7;
+        },
         previousDay() {
             if (0 == this.mobileSelectedDay) {
                 this.mobileSelectedDay = this.$props.configs.daysInAWeek - 1;
-                this.weekStartTimestamp -= 60*60*24*this.$props.configs.daysInAWeek;
+                this.previousWeek();
             }
             else {
                 this.mobileSelectedDay--;
@@ -278,7 +287,7 @@ export default {
         nextDay() {
             if (this.$props.configs.daysInAWeek - 1 == this.mobileSelectedDay) {
                 this.mobileSelectedDay = 0;
-                this.weekStartTimestamp += 60*60*24*this.$props.configs.daysInAWeek;
+                this.nextWeek();
             }
             else {
                 this.mobileSelectedDay++;
