@@ -114,7 +114,7 @@ document.php.lang = {
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
 
-<?php if ($_ENV['CI_ENVIRONMENT'] === 'development'): ?>
+<?php if (array_key_exists('CI_ENVIRONMENT', $_ENV) && $_ENV['CI_ENVIRONMENT'] === 'development'): ?>
     <script type="module" src="<?= base_url('vite/@vite/client'); ?>"></script>
     <script type="module" src="<?= base_url('vite/src/main.js'); ?>"></script>
 <?php else: ?>
