@@ -131,7 +131,13 @@ export default {
             }
         },
         calendarSetToday() {
-            const weekStartTimestamp = 'now' == this.$props.configs.weekStartTimestamp ? Date.now() / 1000 : this.$props.configs.weekStartTimestamp;
+            let weekStartTimestamp = this.$props.configs.weekStartTimestamp;
+            if ('now' == weekStartTimestamp) {
+                const now = new Date();
+                now.setSeconds(0);
+                now.setMilliseconds(0);
+                weekStartTimestamp = now.valueOf() / 1000
+            }
 
             const today = new Date(weekStartTimestamp * 1000);
             today.setHours(0);today.setMinutes(0);today.setSeconds(0);

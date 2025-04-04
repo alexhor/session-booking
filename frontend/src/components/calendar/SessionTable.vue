@@ -35,7 +35,7 @@ defineProps({
         :week-end-timestamp="weekEndTimestamp"
         @previous-week="previousWeek"
         @next-week="nextWeek"
-        @set-week-start-timestamp="(timestamp) => { weekStartTimestamp = timestamp; console.log(weekStartTimestamp); }"/>
+        @set-week-start-timestamp="setWeekStartTimestamp"/>
 
     <table class="table table-hover session-overview" cellspacing="0">
         <thead style="position: sticky; top: 0">
@@ -271,9 +271,15 @@ export default {
         },
         previousWeek() {
             this.weekStartTimestamp -= 60*60*24*7;
+            this.fetchWeekBookings();
         },
         nextWeek() {
             this.weekStartTimestamp += 60*60*24*7;
+            this.fetchWeekBookings();
+        },
+        setWeekStartTimestamp(timestamp) {
+            this.weekStartTimestamp = timestamp;
+            this.fetchWeekBookings();
         },
         previousDay() {
             if (0 == this.mobileSelectedDay) {
