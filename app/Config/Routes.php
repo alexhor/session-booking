@@ -15,8 +15,6 @@ $routes->get('/', 'Home::index');
 // TODO: add email confirmation for (un)booking a session
 // TODO: add ical as attachment to email with booked session
 
-// TODO: fix frontend rendering
-
 // TOOD: validate session length and offset
 // TODO: add test for unauthorized response for user self delete
 

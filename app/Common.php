@@ -109,3 +109,113 @@ function enrichEmailTempate($templateHtml, $variableArray)
 
     return $templateHtml;
 }
+
+
+// Prints all the html entries needed for Vite
+
+function vite(string $entry): string
+{
+    return "\n" . jsTag($entry)
+        . "\n" . jsPreloadImports($entry)
+        . "\n" . cssTag($entry);
+}
+
+function isDev(string $entry): bool
+{
+    return false;
+    return array_key_exists('CI_ENVIRONMENT', $_ENV) && $_ENV['CI_ENVIRONMENT'] === 'development';
+}
+
+
+// Helpers to print tags
+
+function jsTag(string $entry): string
+{
+    $VITE_HOST = base_url('vite');
+    $url = isDev($entry)
+        ? $VITE_HOST . '/' . $entry
+        : assetUrl($entry);
+
+    if (!$url) {
+        return '';
+    }
+    if (isDev($entry)) {
+        return '<script type="module" src="' . $VITE_HOST . '/@vite/client"></script>' . "\n"
+            . '<script type="module" src="' . $url . '"></script>';
+    }
+    return '<script type="module" src="' . $url . '"></script>';
+}
+
+function jsPreloadImports(string $entry): string
+{
+    if (isDev($entry)) {
+        return '';
+    }
+
+    $res = '';
+    foreach (importsUrls($entry) as $url) {
+        $res .= '<link rel="modulepreload" href="'
+            . $url
+            . '">';
+    }
+    return $res;
+}
+
+function cssTag(string $entry): string
+{
+    // not needed on dev, it's inject by Vite
+    if (isDev($entry)) {
+        return '';
+    }
+
+    $tags = '';
+    foreach (cssUrls($entry) as $url) {
+        $tags .= '<link rel="stylesheet" href="'
+            . $url
+            . '">';
+    }
+    return $tags;
+}
+
+// Functions to locate vite files
+
+function ViteManifest()
+{
+    $manifest = file_get_contents(__DIR__ . '/../public/dist/.vite/manifest.json');
+    return json_decode($manifest, true);
+}
+
+function assetUrl(string $entry)
+{
+    $manifest = ViteManifest();
+
+    return isset($manifest[$entry])
+        ? '/dist/' . $manifest[$entry]['file']
+        : '';
+}
+
+function importsUrls(string $entry)
+{
+    $urls = [];
+    $manifest = ViteManifest();
+
+    if (!empty($manifest[$entry]['imports'])) {
+        foreach ($manifest[$entry]['imports'] as $imports) {
+            $urls[] = '/dist/' . $manifest[$imports]['file'];
+        }
+    }
+    return $urls;
+}
+
+function cssUrls(string $entry): array
+{
+    $urls = [];
+    $manifest = ViteManifest();
+
+    if (!empty($manifest[$entry]['css'])) {
+        foreach ($manifest[$entry]['css'] as $file) {
+            $urls[] = '/dist/' . $file;
+        }
+    }
+    return $urls;
+}
