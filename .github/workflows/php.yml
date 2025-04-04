@@ -20,6 +20,10 @@ jobs:
       with:
         node-version: 18
 
+    - name: Install npm packages
+      working-directory: ./frontend
+      run: npm install
+
     - name: Build vite assets
       working-directory: ./frontend
       run: npm run build
