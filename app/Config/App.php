@@ -47,6 +47,7 @@ class App extends BaseConfig
     public array $apiPublicSettingKeys = [
         'App.baseURL' => 'baseURL',
         'App.defaultLocale' => 'defaultLocale',
+        'App.supportedLocales' => 'supportedLocales',
         'App.appTimezone' => 'appTimezone',
         'App.title' => 'title',
         'App.daysInAWeek' => 'daysInAWeek',

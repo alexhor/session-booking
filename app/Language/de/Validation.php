@@ -63,6 +63,25 @@ return [
             'too_may_requests' => 'Token wurden zu oft angefragt. Bitte in einer Minute erneut versuchen',
         ],
     ],
+    'email_templates' => [
+        'json' => [
+            'label' => 'json',
+            'required' => 'JSON Version des Templates fehlt',
+            'valid_json' => 'JSON Version des Templates ist ungültig',
+        ],
+        'html' => [
+            'label' => 'html',
+            'required' => 'HTML Version des Templates fehlt',
+            'string' => 'HTML Version des Templates ist ungültig',
+        ],
+        'subject' => [
+            'label' => 'Betreff',
+            'required' => 'Betreff des Email Templates fehlt',
+            'string' => 'Betreff des Email Templates ist ungültig',
+        ],
+        'success' => 'E-Mail Template wurde gespeichert',
+    ],
     'setting_invalid_value' => 'Ein ungültiger Wert wurde für die Einstellung übergeben',
     'setting_saving_failed' => 'Speichern der Einstellung ist fehlgeschlagen',
+    'failed_to_save_email_template' => 'Speichern des E-Mail Templates ist fehlgeschlagen',
 ];

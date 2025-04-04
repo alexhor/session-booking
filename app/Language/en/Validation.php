@@ -64,6 +64,25 @@ return [
             'too_may_requests' => 'Token was requested too often. Please try again in one minute',
         ],
     ],
+    'email_templates' => [
+        'json' => [
+            'label' => 'json',
+            'required' => 'JSON version of template required',
+            'valid_json' => 'JSON version of template is invalid',
+        ],
+        'html' => [
+            'label' => 'html',
+            'required' => 'HTML version of template required',
+            'valid_json' => 'HTML version of template is invalid',
+        ],
+        'subject' => [
+            'label' => 'Subject',
+            'required' => 'Subject of email template required',
+            'string' => 'Subject of email template is invalid',
+        ],
+        'success' => 'Email template has been saved',
+    ],
     'setting_invalid_value' => 'An invalid value has been given for the setting',
     'setting_saving_failed' => 'Saving the setting failed',
+    'failed_to_save_email_template' => 'Failed to save email tempate',
 ];

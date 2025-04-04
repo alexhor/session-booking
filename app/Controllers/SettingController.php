@@ -138,4 +138,84 @@ class SettingController extends ResourceController
     
         return $this->respond($settingsList, 200);
     }
+
+    public function getEmailTempate($lang = null, $templateName = null)
+    {
+        if (!auth()->user() || !auth()->user()->can('emails.show')) {
+            return $this->failUnauthorized();
+        }
+
+        $langContext = 'lang:' . $lang;
+        $template = setting()->get('Email.' . $templateName . 'TemplateJson', $langContext);
+        if (null == $template) return $this->failNotFound();
+        
+        $template = json_decode($template);
+        $template->subject = setting()->get('Email.' . $templateName . 'TemplateSubject', $langContext);
+        $template->subjectDisabled = setting('Email.' . $templateName . 'TemplateSubjectDisabled');
+
+        return $this->respond($template, 200);
+    }
+
+    public function saveEmailTempate($lang = null, $templateName = null)
+    {
+        if (!auth()->user() || !auth()->user()->can('emails.update')) {
+            return $this->failUnauthorized();
+        }
+        
+        // Validate data
+        $validation = $this->validate([
+            'json' => [
+                'label' => 'Validation.email_templates.json.label',
+                'rules' => 'required',
+                'errors' => [
+                    'required' => 'Validation.email_templates.json.required',
+                    'valid_json' => 'Validation.email_templates.json.valid_json',
+                ],
+            ],
+            'html' => [
+                'label' => 'Validation.email_templates.html.label',
+                'rules' => 'required|string',
+                'errors' => [
+                    'required' => 'Validation.email_templates.html.required',
+                    'string' => 'Validation.email_templates.html.string',
+                ],
+            ],
+            'subject' => [
+                'label' => 'Validation.email_templates.subject.label',
+                'rules' => 'required|string',
+                'errors' => [
+                    'required' => 'Validation.email_templates.subject.required',
+                    'string' => 'Validation.email_templates.subject.string',
+                ],
+            ],
+        ]);
+        if (!$validation) {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+        
+        $templateJson = $this->request->getVar('json');
+        $templateHtml = $this->request->getVar('html');
+        $templateSubject = $this->request->getVar('subject');
+        
+        $langContext = 'lang:' . $lang;
+        setting()->set('Email.' . $templateName . 'TemplateJson', $templateJson, $langContext);
+        setting()->set('Email.' . $templateName . 'TemplateHtml', $templateHtml, $langContext);
+        setting()->set('Email.' . $templateName . 'TemplateSubject', $templateSubject, $langContext);
+
+        $success = setting()->get('Email.' . $templateName . 'TemplateJson', $langContext) == $templateJson && setting()->get('Email.' . $templateName . 'TemplateHtml', $langContext) == $templateHtml && setting()->get('Email.' . $templateName . 'TemplateSubject', $langContext) == $templateSubject;
+        return $success ? $this->respond(lang('Validation.email_templates.success'), 200) : $this->fail(lang('Validation.failed_to_save_email_template'));
+    }
+
+    public function resetEmailTempate($lang = null, $templateName = null)
+    {
+        if (!auth()->user() || !auth()->user()->can('emails.delete')) {
+            return $this->failUnauthorized();
+        }
+
+        $langContext = 'lang:' . $lang;
+        setting()->forget('Email.' . $templateName . 'TemplateJson', $langContext);
+        setting()->forget('Email.' . $templateName . 'TemplateHtml', $langContext);
+        setting()->forget('Email.' . $templateName . 'TemplateSubject', $langContext);
+        return $this->respondDeleted($templateName);
+    }
 }

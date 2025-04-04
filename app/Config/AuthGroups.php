@@ -74,6 +74,10 @@ class AuthGroups extends ShieldAuthGroups
         'settings.show' => 'Read non public website settings',
         'settings.update' => 'Update website settings',
         'settings.delete' => 'Delete website settings',
+
+        'emails.show' => 'Read email templates',
+        'emails.update' => 'Update email templates',
+        'emails.delete' => 'Delete email templates',
     ];
 
     /**
@@ -89,6 +93,7 @@ class AuthGroups extends ShieldAuthGroups
             'users.*',
             'session-bookings.*',
             'settings.*',
+            'emails.*',
         ],
         'user' => [
             'session-bookings.create'

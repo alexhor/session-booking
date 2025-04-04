@@ -8,7 +8,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
   base: '/vite/',
   optimizeDeps: {
-    exclude: ['vue']
+    exclude: ['vue', 'vue-email-editor']
   },
   plugins: [
     vue(),

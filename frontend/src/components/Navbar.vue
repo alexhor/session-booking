@@ -44,6 +44,7 @@ const requestLoginLink = (email) => {
                     <li class="nav-item" v-if="user.isAdmin"><a class="nav-link" :class="{ active: 'admin.sessions' == navigationPage }" @click="$emit('navigate', 'admin.sessions')">{{ lang['Admin.sessions'] }}</a></li>
                     <li class="nav-item" v-if="user.isAdmin"><a class="nav-link" :class="{ active: 'admin.users' == navigationPage }" @click="$emit('navigate', 'admin.users')">{{ lang['Admin.users'] }}</a></li>
                     <li class="nav-item" v-if="user.isAdmin"><a class="nav-link" :class="{ active: 'admin.settings' == navigationPage }" @click="$emit('navigate', 'admin.settings')">{{ lang['Admin.settings'] }}</a></li>
+                    <li class="nav-item" v-if="user.isAdmin"><a class="nav-link" :class="{ active: 'admin.emails' == navigationPage }" @click="$emit('navigate', 'admin.emails')">{{ lang['Admin.emails'] }}</a></li>
                     <li class="nav-item"><a class="nav-link" @click="logout()" href="#">{{ lang['Views.logout'] }}</a></li>
                 </ul>
                 <ul v-else class="navbar-nav mb-2 mb-lg-0">

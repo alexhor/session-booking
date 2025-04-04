@@ -26,4 +26,6 @@ return [
     'save' => 'Speichern',
     'reset' => 'Zurücksetzen',
     'discard' => 'Verwerfen',
+    'emails' => 'Emails',
+    'subject' => 'Betreff',
 ];

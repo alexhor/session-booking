@@ -97,6 +97,8 @@ document.php.lang = {
     'Admin.really_clear_setting': '<?= lang('Admin.really_clear_setting'); ?>',
     'Admin.really_delete_user': '<?= lang('Admin.really_delete_user'); ?>',
     'Admin.really_remove_self_from_admin': '<?= lang('Admin.really_remove_self_from_admin'); ?>',
+    'Admin.emails': '<?= lang('Admin.emails'); ?>',
+    'Admin.subject': '<?= lang('Admin.subject'); ?>',
 
     'Admin.session_details.details': '<?= lang('Admin.session_details.details'); ?>',
     'Admin.session_details.user': '<?= lang('Admin.session_details.user'); ?>',
@@ -107,6 +109,11 @@ document.php.lang = {
     'Admin.session_details.description_is_public': '<?= lang('Admin.session_details.description_is_public'); ?>',
     'Admin.session_details.delete': '<?= lang('Admin.session_details.delete'); ?>',
     'Admin.session_details.add': '<?= lang('Admin.session_details.add'); ?>',
+
+    'Emails.magicLink.label': '<?= lang('Emails.magicLink.label'); ?>',
+    'Emails.sessionBooked.label': '<?= lang('Emails.sessionBooked.label'); ?>',
+    'Emails.sessionBookingCanceled.label': '<?= lang('Emails.sessionBookingCanceled.label'); ?>',
+    'Emails.sessionBookingReminder.label': '<?= lang('Emails.sessionBookingReminder.label'); ?>',
 };
 </script>
 

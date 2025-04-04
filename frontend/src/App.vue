@@ -3,6 +3,7 @@ import Navbar from './components/Navbar.vue'
 import SessionTable from './components/calendar/SessionTable.vue'
 import UserList from './components/admin/UserList.vue'
 import Settings from './components/admin/Settings.vue'
+import Emails from './components/admin/Emails.vue'
 </script>
 
 <template>
@@ -26,7 +27,13 @@ import Settings from './components/admin/Settings.vue'
 
   
   <div class="container">
-    <div v-if="user.isAdmin && 'admin.sessions' == navigationPage" class="container">
+    <Emails
+      v-if="user.isAdmin && 'admin.emails' == navigationPage"
+      @message="(text, status) => message(text, status)"
+      :lang="lang"
+      :configs="configs"/>
+
+    <div v-else-if="user.isAdmin && 'admin.sessions' == navigationPage" class="container">
       <SessionTable
         :lang="lang"
         :configs="configs"

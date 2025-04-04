@@ -9,16 +9,16 @@ $routes->get('/vite/(:any)', 'Home::serveVite/$1');
 
 $routes->get('/', 'Home::index');
 
-// TODO: transfer all config in UI into settings api
-// TODO: add email reminder 24h before a booked session
+// TODO: transfer markings config into settings api
 
+// TODO: add email reminder 24h before a booked session
 // TODO: add email confirmation for (un)booking a session
 // TODO: add ical as attachment to email with booked session
+
+// TODO: fix frontend rendering
+
 // TOOD: validate session length and offset
-
 // TODO: add test for unauthorized response for user self delete
-
-// TODO: in admin settings turn inputs for passwords into inputs with togglable visibility
 
 
 
@@ -55,6 +55,9 @@ $routes->delete('sessions/bookings/(:num)', 'SessionBookingController::delete/$1
 $routes->post('sessions/bookings', 'SessionBookingController::create');
 
 # Settings
+$routes->get('settings/email/(:segment)/(:segment)', 'SettingController::getEmailTempate/$1/$2');
+$routes->put('settings/email/(:segment)/(:segment)', 'SettingController::saveEmailTempate/$1/$2');
+$routes->delete('settings/email/(:segment)/(:segment)', 'SettingController::resetEmailTempate/$1/$2');
 $routes->get('settings/validation', 'SettingController::getWithValidationData');
 $routes->get('settings/(:segment)', 'SettingController::get/$1');
 $routes->put('settings/(:segment)', 'SettingController::set/$1');
