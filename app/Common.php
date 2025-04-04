@@ -14,9 +14,80 @@
  * @see: https://codeigniter.com/user_guide/extending/common.html
  */
 
+function __matchEmailTemplateFunctionArguments($paramsString, $variableArray) {
+    $startChar = false;
+    $endChar = false;
+    $depth = 0;
+    $argString = "";
+
+    $argArray = [];
+
+    foreach (str_split($paramsString) as $char) {
+        // A new argument has started
+        if (false === $endChar) {
+            // Skip spaces and commas
+            if (" " == $char || "," == $char) continue;
+            // Set start and end char
+            switch ($char) {
+                case "$":
+                    $endChar = ",";
+                    $argString = "$";
+                    break;
+                case "[":
+                    $endChar = "]";
+                    $argString = "[";
+                    break;
+                default:
+                    $endChar = $char;
+            }
+            $startChar = $char;
+        }
+        // Still reading the previous argument
+        else {
+            // End of argument reached
+            if ($endChar == $char) {
+                if (0 == $depth) {
+                    if ("]" == $char) $argString .= "]";
+                    $argArray[] = $argString;
+                    $startChar = false;
+                    $endChar = false;
+                    $argString = "";
+                    continue;
+                }
+                else {
+                    $depth--;
+                }
+            }
+            else if ($startChar == $char) {
+                $depth++;
+            }
+
+            $argString .= $char;
+        }
+    }
+    // Add leftover argument
+    if ("" != $argString) $argArray[] = $argString;
+
+    foreach ($argArray as &$argument) {
+        switch(substr($argument, 0, 1)) {
+            case "$":
+                $varName = substr($argument, 1);
+                if (array_key_exists($varName, $variableArray)) {
+                    $argument = $variableArray[$varName];
+                }
+                break;
+            case "[":
+                $argument = __matchEmailTemplateFunctionArguments(substr($argument, 1, -1), $variableArray);
+                break;
+        }
+    }
+
+    return $argArray;
+}
+
 function enrichEmailTempate($templateHtml, $variableArray)
 {
-    if (preg_match_all("/\{\{ (\S+) \}\}/i", $templateHtml, $matches)) {
+    if (preg_match_all("/\{\{ ([^}]+) \}\}/i", $templateHtml, $matches)) {
         $matches = array_unique($matches[1]);
         
         foreach ($matches as $key) {
@@ -25,16 +96,7 @@ function enrichEmailTempate($templateHtml, $variableArray)
             if (preg_match('/(\w+)\s*\(\s*([^)]*)\s*\)/', $key, $functionMatches)) {
                 $functionName = $functionMatches[1];
                 if (in_array($functionName, service("settings")->get("Email.templatesAllowedFunctionCalls")) && function_exists($functionName)) {
-                    $args = array_map(function($item) {
-                        return trim(trim(trim($item, " "), "'"), '"');
-                    }, explode(',', $functionMatches[2]));
-                    
-                    foreach ($args as &$argument) {
-                        if (preg_match('/\$(\w+)/', $argument, $argMatches) && array_key_exists($argMatches[1], $variableArray)) {
-                            $argument = $variableArray[$argMatches[1]];
-                        }
-                    }
-                    
+                    $args = __matchEmailTemplateFunctionArguments($functionMatches[2], $variableArray);
                     $value = call_user_func_array($functionName, $args);
                 }
             }

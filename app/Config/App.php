@@ -28,6 +28,7 @@ class App extends BaseConfig
         'App.weekStartTimestamp' => 'timestamp',
         'App.sessionInterval' => \integer::class,
         'App.sessionOffset' => \integer::class,
+        'App.reminderEmailTimespan' => \integer::class,
         'Email.fromEmail' => 'email',
         'Email.fromName' => \string::class,
         'Email.protocol' => ['mail', 'sendmail', 'smtp'],
@@ -67,6 +68,7 @@ class App extends BaseConfig
     public int|string $weekStartTimestamp = 'now';
     public int $sessionInterval = HOUR;
     public int $sessionOffset = 0;
+    public int $reminderEmailTimespan = DAY;
 
     /**
      * --------------------------------------------------------------------------

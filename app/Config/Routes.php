@@ -11,7 +11,7 @@ $routes->get('/', 'Home::index');
 
 // TODO: transfer markings config into settings api
 
-// TODO: add email reminder 24h before a booked session
+// TODO: add tests for all email settings functions
 // TODO: add email confirmation for (un)booking a session
 // TODO: add ical as attachment to email with booked session
 

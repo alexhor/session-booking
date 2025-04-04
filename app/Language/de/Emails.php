@@ -23,5 +23,8 @@ return [
     'sessionBookingReminder' => [
         'label' => 'Session Erinnerungs E-Mail',
         'subject' => 'Deine gebuchte Session startet demnächst',
+        'hello' => 'Hallo {0}',
+        'you_have_book_a_session_starting_soon' => 'Du hast dich für eine Session eingetragen, die demnächst startet.',
+        'it_starts_at' => 'Es geht los am {0} um {1}',
     ],
 ];
