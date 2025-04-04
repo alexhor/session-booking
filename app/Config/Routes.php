@@ -18,6 +18,8 @@ $routes->get('/', 'Home::index');
 // TOOD: validate session length and offset
 // TODO: add test for unauthorized response for user self delete
 
+// TODO: add paggination for user page
+// TODO: add search for user page
 
 
 # Some (validation) error occured during email sending or token validation
