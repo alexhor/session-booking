@@ -122,7 +122,6 @@ function vite(string $entry): string
 
 function isDev(string $entry): bool
 {
-    return false;
     return array_key_exists('CI_ENVIRONMENT', $_ENV) && $_ENV['CI_ENVIRONMENT'] === 'development';
 }
 
