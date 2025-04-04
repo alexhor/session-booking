@@ -80,7 +80,7 @@ export default {
             });
             const htmlPromise = new Promise((resolve, reject) => {
                 this.$refs.emailEditor.editor.exportHtml((html) => {
-                    data['html'] = html.html;
+                    data['html'] = html.html.replace(/(\r\n|\n|\r)/gm, "").replace(/\s+/g,' ');
                     resolve();
                 });
             });
